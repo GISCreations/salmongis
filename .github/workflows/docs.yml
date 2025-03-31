@@ -29,8 +29,9 @@ jobs:
                   python -m unittest discover tests/
             - name: Deploy to GitHub Pages
               env:
-                  GH_PAT: ${{ secrets.GH_PAT }}
+                GH_PAT: ${{ secrets.GH_PAT }}
               run: |
-                  git config --global user.email "you@example.com"
-                  git config --global user.name "Your Name"
-                  mkdocs gh-deploy --force --remote-name origin --remote-branch gh-pages --token $GH_PAT
+                git config --global user.email "you@example.com"
+                git config --global user.name "Your Name"
+                git remote set-url origin https://$GH_PAT@github.com/${{ github.repository }}
+                mkdocs gh-deploy --force --remote-name origin --remote-branch gh-pages
