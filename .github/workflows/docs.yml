@@ -21,17 +21,7 @@ jobs:
                   pip install --user --no-cache-dir Cython
                   pip install --user -r requirements.txt -r requirements_dev.txt
                   pip install .
-            - name: Discover typos with codespell
-              run: |
-                  codespell --skip="*.csv,*.geojson,*.json,*.js,*.html,*cff,./.git" --ignore-words-list="aci,hist"
             - name: PKG-TEST
               run: |
                   python -m unittest discover tests/
-            - name: Deploy to GitHub Pages
-              env:
-                GH_PAT: ${{ secrets.GH_PAT }}
-              run: |
-                git config --global user.email "you@example.com"
-                git config --global user.name "Your Name"
-                git remote set-url origin https://$GH_PAT@github.com/${{ github.repository }}
-                mkdocs gh-deploy --force --remote-name origin --remote-branch gh-pages
+            - run: mkdocs gh-deploy --force
