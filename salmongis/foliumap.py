@@ -5,6 +5,7 @@ This module provides a custom map class extending folium.Map.
 import folium
 import geopandas as gpd
 
+
 class Map(folium.Map):
     """
     A custom map class extending folium.Map.
@@ -21,7 +22,7 @@ class Map(folium.Map):
         """
         super().__init__(location=center, zoom_start=zoom, **kwargs)
         folium.LayerControl().add_to(self)
-    
+
     def add_basemap(self, basemap="OpenStreetMap"):
         """
         Adds a basemap layer to the map.
@@ -37,7 +38,9 @@ class Map(folium.Map):
             "Stamen Toner": "http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png",
             "Stamen Watercolor": "http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg",
         }
-        folium.TileLayer(tiles=basemaps.get(basemap, basemaps['OpenStreetMap']), attr=basemap).add_to(self.map)
+        folium.TileLayer(
+            tiles=basemaps.get(basemap, basemaps["OpenStreetMap"]), attr=basemap
+        ).add_to(self.map)
 
     def add_vector(self, data, **kwargs):
         """
@@ -49,11 +52,12 @@ class Map(folium.Map):
                 - A GeoDataFrame.
                 - A GeoJSON-like dictionary.
             **kwargs: Additional keyword arguments for folium.GeoJson.
-        
+
         Raises:
             ValueError: If the data type is not supported.
         """
-        import geopandas as gpd 
+        import geopandas as gpd
+
         if isinstance(data, str):
             gdf = gpd.read_file(data)
             self.add_gdf(gdf, **kwargs)
@@ -63,7 +67,7 @@ class Map(folium.Map):
             self.add_geojson(data, **kwargs)
         else:
             raise ValueError("Invalid data type")
-        
+
     def add_layer_control(self):
         """
         Adds a layer control widget to the map.
