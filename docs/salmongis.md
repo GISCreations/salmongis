@@ -1,4 +1,0 @@
-
-# salmongis module
-
-::: salmongis.salmongis
