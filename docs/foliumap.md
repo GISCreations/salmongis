@@ -1,4 +1,4 @@
 
-# folium module
+# foliumap module
 
 ::: salmongis.folium
