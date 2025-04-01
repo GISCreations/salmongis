@@ -1,0 +1,4 @@
+
+# foliumap module
+
+::: salmongis.foliumap
