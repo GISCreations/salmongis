@@ -4,6 +4,7 @@ import ipyleaflet
 import geopandas as gpd
 from ipyleaflet import GeoJSON
 
+
 class Map(ipyleaflet.Map):
     """A custom map class extending ipyleaflet.Map."""
 
@@ -52,16 +53,18 @@ class Map(ipyleaflet.Map):
         map_types = {
             "ROADMAP": "m",
             "SATELLITE": "s",
-            "TERRAIN": "p", 
+            "TERRAIN": "p",
             "HYBRID": "y",
         }
 
         map_type = map_types[map_type]
 
-        url = f"https://mt1.google.com/vt/lyrs={map_type.lower()}&x={{x}}&y={{y}}&z={{z}}"
+        url = (
+            f"https://mt1.google.com/vt/lyrs={map_type.lower()}&x={{x}}&y={{y}}&z={{z}}"
+        )
         layer = ipyleaflet.TileLayer(ur1=url, name="Google Map")
         self.add(layer)
-    
+
     def add_vector(self, data, **kwargs):
         """
         Adds a vector layer to the map from a GeoJSON or file.
