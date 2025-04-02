@@ -4,6 +4,7 @@ This module provides a custom map class extending folium.Map!
 
 import folium
 import geopandas as gpd
+from typing import Union, Tuple, Dict
 
 
 class Map(folium.Map):
@@ -11,7 +12,7 @@ class Map(folium.Map):
     A custom map class extending folium.Map.
     """
 
-    def __init__(self, center=(0, 0), zoom=2, **kwargs):
+    def __init__(self, center: Tuple[float, float] = (0, 0), zoom: int = 2, **kwargs) -> None:
         """
         Initializes the map with a given center and zoom level.
 
@@ -23,13 +24,13 @@ class Map(folium.Map):
         super().__init__(location=center, zoom_start=zoom, **kwargs)
         folium.LayerControl().add_to(self)
 
-     def add_geojson(
+    def add_geojson(
         self,
-        data,
-        zoom_to_layer=True,
-        hover_style=None,
+        data: Union[str, Dict],
+        zoom_to_layer: bool = True,
+        hover_style: Dict = None,
         **kwargs,
-    ):
+    ) -> None:
         """Adds a GeoJSON layer to the map.
 
         Args:
@@ -41,9 +42,6 @@ class Map(folium.Map):
         Raises:
             ValueError: If the data type is invalid.
         """
-
-        import geopandas as gpd
-
         if hover_style is None:
             hover_style = {"color": "yellow", "fillOpacity": 0.2}
 
@@ -52,25 +50,25 @@ class Map(folium.Map):
             geojson = gdf.__geo_interface__
         elif isinstance(data, dict):
             geojson = data
+        else:
+            raise ValueError("Invalid data type")
 
-        geojson = folium.GeoJson(data=geojson, **kwargs)
-        geojson.add_to(self)
+        geojson_layer = folium.GeoJson(data=geojson, **kwargs)
+        geojson_layer.add_to(self)
 
-    def add_shp(self, data, **kwargs):
+    def add_shp(self, data: str, **kwargs) -> None:
         """Adds a shapefile to the map.
 
         Args:
             data (str): The file path to the shapefile.
             **kwargs: Additional keyword arguments for the GeoJSON layer.
         """
-        import geopandas as gpd
-
         gdf = gpd.read_file(data)
         gdf = gdf.to_crs(epsg=4326)
         geojson = gdf.__geo_interface__
         self.add_geojson(geojson, **kwargs)
-        
-    def add_gdf(self, gdf, **kwargs):
+
+    def add_gdf(self, gdf: gpd.GeoDataFrame, **kwargs) -> None:
         """Adds a GeoDataFrame to the map.
 
         Args:
@@ -81,8 +79,7 @@ class Map(folium.Map):
         geojson = gdf.__geo_interface__
         self.add_geojson(geojson, **kwargs)
 
-    
-    def add_basemap(self, basemap="OpenStreetMap"):
+    def add_basemap(self, basemap: str = "OpenStreetMap") -> None:
         """
         Adds a basemap layer to the map.
 
@@ -99,9 +96,9 @@ class Map(folium.Map):
         }
         folium.TileLayer(
             tiles=basemaps.get(basemap, basemaps["OpenStreetMap"]), attr=basemap
-        ).add_to(self.map)
+        ).add_to(self)
 
-    def add_vector(self, data, **kwargs):
+    def add_vector(self, data: Union[str, gpd.GeoDataFrame, Dict], **kwargs) -> None:
         """
         Adds a vector layer to the map from various data formats.
 
@@ -115,8 +112,6 @@ class Map(folium.Map):
         Raises:
             ValueError: If the data type is not supported.
         """
-        import geopandas as gpd
-
         if isinstance(data, str):
             gdf = gpd.read_file(data)
             self.add_gdf(gdf, **kwargs)
@@ -127,7 +122,7 @@ class Map(folium.Map):
         else:
             raise ValueError("Invalid data type")
 
-    def add_layer_control(self):
+    def add_layer_control(self) -> None:
         """
         Adds a layer control widget to the map.
 
