@@ -81,6 +81,8 @@ nav:
     - Report Issues: https://github.com/GISCreations/salmongis/issues
     - Examples:
         - examples/intro.ipynb
+        - examples/folium.ipynb
+
     - API Reference:
           - salmongis module: salmongis.md
           - common module: common.md
