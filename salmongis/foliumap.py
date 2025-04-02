@@ -23,6 +23,65 @@ class Map(folium.Map):
         super().__init__(location=center, zoom_start=zoom, **kwargs)
         folium.LayerControl().add_to(self)
 
+     def add_geojson(
+        self,
+        data,
+        zoom_to_layer=True,
+        hover_style=None,
+        **kwargs,
+    ):
+        """Adds a GeoJSON layer to the map.
+
+        Args:
+            data (str or dict): The GeoJSON data. Can be a file path (str) or a dictionary.
+            zoom_to_layer (bool, optional): Whether to zoom to the layer's bounds. Defaults to True.
+            hover_style (dict, optional): Style to apply when hovering over features. Defaults to {"color": "yellow", "fillOpacity": 0.2}.
+            **kwargs: Additional keyword arguments for the folium.GeoJson layer.
+
+        Raises:
+            ValueError: If the data type is invalid.
+        """
+
+        import geopandas as gpd
+
+        if hover_style is None:
+            hover_style = {"color": "yellow", "fillOpacity": 0.2}
+
+        if isinstance(data, str):
+            gdf = gpd.read_file(data)
+            geojson = gdf.__geo_interface__
+        elif isinstance(data, dict):
+            geojson = data
+
+        geojson = folium.GeoJson(data=geojson, **kwargs)
+        geojson.add_to(self)
+
+    def add_shp(self, data, **kwargs):
+        """Adds a shapefile to the map.
+
+        Args:
+            data (str): The file path to the shapefile.
+            **kwargs: Additional keyword arguments for the GeoJSON layer.
+        """
+        import geopandas as gpd
+
+        gdf = gpd.read_file(data)
+        gdf = gdf.to_crs(epsg=4326)
+        geojson = gdf.__geo_interface__
+        self.add_geojson(geojson, **kwargs)
+        
+    def add_gdf(self, gdf, **kwargs):
+        """Adds a GeoDataFrame to the map.
+
+        Args:
+            gdf (geopandas.GeoDataFrame): The GeoDataFrame to add.
+            **kwargs: Additional keyword arguments for the GeoJSON layer.
+        """
+        gdf = gdf.to_crs(epsg=4326)
+        geojson = gdf.__geo_interface__
+        self.add_geojson(geojson, **kwargs)
+
+    
     def add_basemap(self, basemap="OpenStreetMap"):
         """
         Adds a basemap layer to the map.
