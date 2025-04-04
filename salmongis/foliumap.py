@@ -141,44 +141,14 @@ class Map(folium.Map):
 
         Raises:
             ValueError: If the provided basemap names are not supported.
-        """
-        basemaps = {
-            "OpenStreetMap": {
-                "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-                "attr": "OpenStreetMap contributors",
-            },
-            "Stamen Terrain": {
-                "url": "http://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.png",
-                "attr": "Map tiles",
-            },
-            "Stamen Toner": {
-                "url": "http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png",
-                "attr": "OpenStreetMap contributors",
-            },
-            "Stamen Watercolor": {
-                "url": "http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg",
-                "attr": "Map tiles",
-            },
-        }
+        """ 
+        attr = (
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> '
+        'contributors, &copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
+)
 
-        if left_basemap not in basemaps or right_basemap not in basemaps:
-            raise ValueError("Invalid basemap name. Supported basemaps are: " + ", ".join(basemaps.keys()))
+        layer_right = folium.TileLayer(left_basemap, attr=attr)
+        layer_left = folium.TileLayer(right_basemap, attr=attr)
 
-        left_layer = folium.TileLayer(
-            tiles=basemaps[left_basemap]["url"],
-            attr=basemaps[left_basemap]["attr"],
-            name=f"Left: {left_basemap}",
-        )
-        right_layer = folium.TileLayer(
-            tiles=basemaps[right_basemap]["url"],
-            attr=basemaps[right_basemap]["attr"],
-            name=f"Right: {right_basemap}",
-        )
-
-        # Use DualMap for split map functionality
-        split_map = DualMap(location=self.location)
-        left_layer.add_to(split_map.m1)
-        right_layer.add_to(split_map.m2)
-
-        # Replace the current map with the split map
-        self._children = split_map._children
+        sbs = folium.plugins.SideBySideLayers(layer_left=layer_left, layer_right=layer_right)
+        self.add_child(sbs)
