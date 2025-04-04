@@ -1121,47 +1121,17 @@ Map            (<span title="folium.folium.Map">Map</span>)
 
 <span class="sd">        Raises:</span>
 <span class="sd">            ValueError: If the provided basemap names are not supported.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">basemaps</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;OpenStreetMap&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://</span><span class="si">{s}</span><span class="s2">.tile.openstreetmap.org/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.png&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;attr&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenStreetMap contributors&quot;</span><span class="p">,</span>
-            <span class="p">},</span>
-            <span class="s2">&quot;Stamen Terrain&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://</span><span class="si">{s}</span><span class="s2">.tile.stamen.com/terrain/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.png&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;attr&quot;</span><span class="p">:</span> <span class="s2">&quot;Map tiles&quot;</span><span class="p">,</span>
-            <span class="p">},</span>
-            <span class="s2">&quot;Stamen Toner&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://</span><span class="si">{s}</span><span class="s2">.tile.stamen.com/toner/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.png&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;attr&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenStreetMap contributors&quot;</span><span class="p">,</span>
-            <span class="p">},</span>
-            <span class="s2">&quot;Stamen Watercolor&quot;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://</span><span class="si">{s}</span><span class="s2">.tile.stamen.com/watercolor/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.jpg&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;attr&quot;</span><span class="p">:</span> <span class="s2">&quot;Map tiles&quot;</span><span class="p">,</span>
-            <span class="p">},</span>
-        <span class="p">}</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="n">attr</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s1">&#39;&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;OpenStreetMap&lt;/a&gt; &#39;</span>
+        <span class="s1">&#39;contributors, &amp;copy; &lt;a href=&quot;https://cartodb.com/attributions&quot;&gt;CartoDB&lt;/a&gt;&#39;</span>
+<span class="p">)</span>
 
-        <span class="k">if</span> <span class="n">left_basemap</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">basemaps</span> <span class="ow">or</span> <span class="n">right_basemap</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">basemaps</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid basemap name. Supported basemaps are: &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basemaps</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="n">layer_right</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">TileLayer</span><span class="p">(</span><span class="n">left_basemap</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="n">attr</span><span class="p">)</span>
+        <span class="n">layer_left</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">TileLayer</span><span class="p">(</span><span class="n">right_basemap</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="n">attr</span><span class="p">)</span>
 
-        <span class="n">left_layer</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">TileLayer</span><span class="p">(</span>
-            <span class="n">tiles</span><span class="o">=</span><span class="n">basemaps</span><span class="p">[</span><span class="n">left_basemap</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span>
-            <span class="n">attr</span><span class="o">=</span><span class="n">basemaps</span><span class="p">[</span><span class="n">left_basemap</span><span class="p">][</span><span class="s2">&quot;attr&quot;</span><span class="p">],</span>
-            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Left: </span><span class="si">{</span><span class="n">left_basemap</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">right_layer</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">TileLayer</span><span class="p">(</span>
-            <span class="n">tiles</span><span class="o">=</span><span class="n">basemaps</span><span class="p">[</span><span class="n">right_basemap</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span>
-            <span class="n">attr</span><span class="o">=</span><span class="n">basemaps</span><span class="p">[</span><span class="n">right_basemap</span><span class="p">][</span><span class="s2">&quot;attr&quot;</span><span class="p">],</span>
-            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Right: </span><span class="si">{</span><span class="n">right_basemap</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Use DualMap for split map functionality</span>
-        <span class="n">split_map</span> <span class="o">=</span> <span class="n">DualMap</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>
-        <span class="n">left_layer</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">split_map</span><span class="o">.</span><span class="n">m1</span><span class="p">)</span>
-        <span class="n">right_layer</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">split_map</span><span class="o">.</span><span class="n">m2</span><span class="p">)</span>
-
-        <span class="c1"># Replace the current map with the split map</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_children</span> <span class="o">=</span> <span class="n">split_map</span><span class="o">.</span><span class="n">_children</span>
+        <span class="n">sbs</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">SideBySideLayers</span><span class="p">(</span><span class="n">layer_left</span><span class="o">=</span><span class="n">layer_left</span><span class="p">,</span> <span class="n">layer_right</span><span class="o">=</span><span class="n">layer_right</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">sbs</span><span class="p">)</span>
 </code></pre></div>
         </details>
 
@@ -1623,57 +1593,27 @@ Defaults to "OpenStreetMap".</p></td>
 </table>
         <details class="quote">
           <summary>Source code in <code>salmongis/foliumap.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_split_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left_basemap</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">right_basemap</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Adds a split map to the map, displaying two basemaps side by side.</span>
+          <div class="highlight"><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">add_split_map</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">left_basemap</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">right_basemap</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Adds a split map to the map, displaying two basemaps side by side.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        left_basemap (str): The name of the basemap to display on the left side.</span>
-<span class="sd">        right_basemap (str): The name of the basemap to display on the right side.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            left_basemap (str): The name of the basemap to display on the left side.</span>
+<span class="sd">            right_basemap (str): The name of the basemap to display on the right side.</span>
 
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: If the provided basemap names are not supported.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">basemaps</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;OpenStreetMap&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;https://</span><span class="si">{s}</span><span class="s2">.tile.openstreetmap.org/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.png&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;attr&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenStreetMap contributors&quot;</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;Stamen Terrain&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://</span><span class="si">{s}</span><span class="s2">.tile.stamen.com/terrain/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.png&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;attr&quot;</span><span class="p">:</span> <span class="s2">&quot;Map tiles&quot;</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;Stamen Toner&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://</span><span class="si">{s}</span><span class="s2">.tile.stamen.com/toner/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.png&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;attr&quot;</span><span class="p">:</span> <span class="s2">&quot;OpenStreetMap contributors&quot;</span><span class="p">,</span>
-        <span class="p">},</span>
-        <span class="s2">&quot;Stamen Watercolor&quot;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://</span><span class="si">{s}</span><span class="s2">.tile.stamen.com/watercolor/</span><span class="si">{z}</span><span class="s2">/</span><span class="si">{x}</span><span class="s2">/</span><span class="si">{y}</span><span class="s2">.jpg&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;attr&quot;</span><span class="p">:</span> <span class="s2">&quot;Map tiles&quot;</span><span class="p">,</span>
-        <span class="p">},</span>
-    <span class="p">}</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            ValueError: If the provided basemap names are not supported.</span>
+<span class="sd">        &quot;&quot;&quot;</span> 
+        <span class="n">attr</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s1">&#39;&amp;copy; &lt;a href=&quot;https://www.openstreetmap.org/copyright&quot;&gt;OpenStreetMap&lt;/a&gt; &#39;</span>
+        <span class="s1">&#39;contributors, &amp;copy; &lt;a href=&quot;https://cartodb.com/attributions&quot;&gt;CartoDB&lt;/a&gt;&#39;</span>
+<span class="p">)</span>
 
-    <span class="k">if</span> <span class="n">left_basemap</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">basemaps</span> <span class="ow">or</span> <span class="n">right_basemap</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">basemaps</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid basemap name. Supported basemaps are: &quot;</span> <span class="o">+</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basemaps</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+        <span class="n">layer_right</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">TileLayer</span><span class="p">(</span><span class="n">left_basemap</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="n">attr</span><span class="p">)</span>
+        <span class="n">layer_left</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">TileLayer</span><span class="p">(</span><span class="n">right_basemap</span><span class="p">,</span> <span class="n">attr</span><span class="o">=</span><span class="n">attr</span><span class="p">)</span>
 
-    <span class="n">left_layer</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">TileLayer</span><span class="p">(</span>
-        <span class="n">tiles</span><span class="o">=</span><span class="n">basemaps</span><span class="p">[</span><span class="n">left_basemap</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span>
-        <span class="n">attr</span><span class="o">=</span><span class="n">basemaps</span><span class="p">[</span><span class="n">left_basemap</span><span class="p">][</span><span class="s2">&quot;attr&quot;</span><span class="p">],</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Left: </span><span class="si">{</span><span class="n">left_basemap</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">right_layer</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">TileLayer</span><span class="p">(</span>
-        <span class="n">tiles</span><span class="o">=</span><span class="n">basemaps</span><span class="p">[</span><span class="n">right_basemap</span><span class="p">][</span><span class="s2">&quot;url&quot;</span><span class="p">],</span>
-        <span class="n">attr</span><span class="o">=</span><span class="n">basemaps</span><span class="p">[</span><span class="n">right_basemap</span><span class="p">][</span><span class="s2">&quot;attr&quot;</span><span class="p">],</span>
-        <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Right: </span><span class="si">{</span><span class="n">right_basemap</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-
-    <span class="c1"># Use DualMap for split map functionality</span>
-    <span class="n">split_map</span> <span class="o">=</span> <span class="n">DualMap</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">location</span><span class="p">)</span>
-    <span class="n">left_layer</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">split_map</span><span class="o">.</span><span class="n">m1</span><span class="p">)</span>
-    <span class="n">right_layer</span><span class="o">.</span><span class="n">add_to</span><span class="p">(</span><span class="n">split_map</span><span class="o">.</span><span class="n">m2</span><span class="p">)</span>
-
-    <span class="c1"># Replace the current map with the split map</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">_children</span> <span class="o">=</span> <span class="n">split_map</span><span class="o">.</span><span class="n">_children</span>
+        <span class="n">sbs</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">plugins</span><span class="o">.</span><span class="n">SideBySideLayers</span><span class="p">(</span><span class="n">layer_left</span><span class="o">=</span><span class="n">layer_left</span><span class="p">,</span> <span class="n">layer_right</span><span class="o">=</span><span class="n">layer_right</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_child</span><span class="p">(</span><span class="n">sbs</span><span class="p">)</span>
 </code></pre></div>
         </details>
     </div>

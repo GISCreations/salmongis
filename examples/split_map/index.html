@@ -1199,11 +1199,11 @@ span.linenos.special { color: #000000; background-color: #ffffc0; padding-left: 
 </clipboard-copy>
 </div>
 <div class="highlight-ipynb hl-python"><pre><span></span><span class="n">m</span> <span class="o">=</span> <span class="n">salmongis</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">40</span><span class="p">,</span> <span class="o">-</span><span class="mi">100</span><span class="p">),</span> <span class="n">zoom</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
-<span class="n">m</span><span class="o">.</span><span class="n">add_split_map</span><span class="p">(</span><span class="s2">"OpenStreetMap"</span><span class="p">,</span> <span class="s2">"Stamen Terrain"</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">add_split_map</span><span class="p">(</span><span class="s2">"OpenStreetMap"</span><span class="p">,</span> <span class="s2">"Stamen Toner"</span><span class="p">)</span>
 <span class="n">m</span>
 </pre></div>
 <div class="clipboard-copy-txt" id="cell-2">m = salmongis.Map(center=(40, -100), zoom=4)
-m.add_split_map("OpenStreetMap", "Stamen Terrain")
+m.add_split_map("OpenStreetMap", "Stamen Toner")
 m</div>
 </div>
 </div>
@@ -1243,7 +1243,7 @@ m</div>
             &lt;meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" /&gt;
             &lt;style&gt;
-                #map_d0a0b134d6ff5821851db1272abda0f4 {
+                #map_3891fadb37e62036c08900a1a66a61f5 {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -1253,18 +1253,19 @@ m</div>
                 .leaflet-container { font-size: 1rem; }
             &lt;/style&gt;
         
+    &lt;script src="https://cdn.jsdelivr.net/gh/digidem/leaflet-side-by-side@2.0.0/leaflet-side-by-side.min.js"&gt;&lt;/script&gt;
 &lt;/head&gt;
 &lt;body&gt;
     
     
-            &lt;div class="folium-map" id="map_d0a0b134d6ff5821851db1272abda0f4" &gt;&lt;/div&gt;
+            &lt;div class="folium-map" id="map_3891fadb37e62036c08900a1a66a61f5" &gt;&lt;/div&gt;
         
 &lt;/body&gt;
 &lt;script&gt;
     
     
-            var map_d0a0b134d6ff5821851db1272abda0f4 = L.map(
-                "map_d0a0b134d6ff5821851db1272abda0f4",
+            var map_3891fadb37e62036c08900a1a66a61f5 = L.map(
+                "map_3891fadb37e62036c08900a1a66a61f5",
                 {
                     center: [40.0, -100.0],
                     crs: L.CRS.EPSG3857,
@@ -1279,6 +1280,50 @@ m</div>
 
             
 
+        
+    
+            var tile_layer_de547808ffaefbfe3f5579b3bf11dc78 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_de547808ffaefbfe3f5579b3bf11dc78.addTo(map_3891fadb37e62036c08900a1a66a61f5);
+        
+    
+            var layer_control_1bdbbc0db7497a682dfd58c58f42d7ac_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_de547808ffaefbfe3f5579b3bf11dc78,
+                },
+                overlays :  {
+                },
+            };
+            let layer_control_1bdbbc0db7497a682dfd58c58f42d7ac = L.control.layers(
+                layer_control_1bdbbc0db7497a682dfd58c58f42d7ac_layers.base_layers,
+                layer_control_1bdbbc0db7497a682dfd58c58f42d7ac_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_3891fadb37e62036c08900a1a66a61f5);
+
+        
+    
+            var side_by_side_layers_1b9d3ea230f32cb4cf8937611570ba81 = L.control.sideBySide(
+                tile_layer_4a5e5962f61602603b7b9d90b3470220, tile_layer_ff190a8a333b623d9737547d829e0d16
+            ).addTo(map_3891fadb37e62036c08900a1a66a61f5);
         
 &lt;/script&gt;
 &lt;/html&gt;' style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" webkitallowfullscreen=""></iframe></div></div>
@@ -1317,7 +1362,7 @@ m</div>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 4, 2025 18:53:46"><span class="timeago" datetime="2025-04-04T18:53:46+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 4, 2025 18:53:46">2025-04-04</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 4, 2025 19:27:03"><span class="timeago" datetime="2025-04-04T19:27:03+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 4, 2025 19:27:03">2025-04-04</span>
   </span>
 
     
