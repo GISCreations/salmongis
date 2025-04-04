@@ -5,7 +5,7 @@ This module provides a custom map class extending folium.Map!
 import folium
 import geopandas as gpd
 from typing import Union, Tuple, Dict
-import leafmap
+
 
 class Map(folium.Map):
     """
