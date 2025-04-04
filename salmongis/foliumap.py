@@ -5,6 +5,7 @@ This module provides a custom map class extending folium.Map!
 import folium
 import geopandas as gpd
 from typing import Union, Tuple, Dict
+from folium.plugins import DualMap
 
 
 class Map(folium.Map):
@@ -142,17 +143,42 @@ class Map(folium.Map):
             ValueError: If the provided basemap names are not supported.
         """
         basemaps = {
-            "OpenStreetMap": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-            "Stamen Terrain": "http://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.png",
-            "Stamen Toner": "http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png",
-            "Stamen Watercolor": "http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg",
+            "OpenStreetMap": {
+                "url": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                "attr": "OpenStreetMap contributors",
+            },
+            "Stamen Terrain": {
+                "url": "http://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.png",
+                "attr": "Map tiles",
+            },
+            "Stamen Toner": {
+                "url": "http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png",
+                "attr": "OpenStreetMap contributors",
+            },
+            "Stamen Watercolor": {
+                "url": "http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg",
+                "attr": "Map tiles",
+            },
         }
 
         if left_basemap not in basemaps or right_basemap not in basemaps:
             raise ValueError("Invalid basemap name. Supported basemaps are: " + ", ".join(basemaps.keys()))
 
-        left_layer = folium.TileLayer(tiles=basemaps[left_basemap], name=f"Left: {left_basemap}")
-        right_layer = folium.TileLayer(tiles=basemaps[right_basemap], name=f"Right: {right_basemap}")
+        left_layer = folium.TileLayer(
+            tiles=basemaps[left_basemap]["url"],
+            attr=basemaps[left_basemap]["attr"],
+            name=f"Left: {left_basemap}",
+        )
+        right_layer = folium.TileLayer(
+            tiles=basemaps[right_basemap]["url"],
+            attr=basemaps[right_basemap]["attr"],
+            name=f"Right: {right_basemap}",
+        )
 
-        left_layer.add_to(self)
-        right_layer.add_to(self) 
+        # Use DualMap for split map functionality
+        split_map = DualMap(location=self.location)
+        left_layer.add_to(split_map.m1)
+        right_layer.add_to(split_map.m2)
+
+        # Replace the current map with the split map
+        self._children = split_map._children
