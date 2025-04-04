@@ -5,7 +5,7 @@ This module provides a custom map class extending folium.Map!
 import folium
 import geopandas as gpd
 from typing import Union, Tuple, Dict
-
+import leafmap
 
 class Map(folium.Map):
     """
@@ -23,7 +23,7 @@ class Map(folium.Map):
         """
         super().__init__(location=center, zoom_start=zoom, **kwargs)
         folium.LayerControl().add_to(self)
-
+        
     def add_geojson(
         self,
         data: Union[str, Dict],
@@ -129,3 +129,30 @@ class Map(folium.Map):
         The layer control allows users to toggle visibility of layers on the map.
         """
         folium.LayerControl().add_to(self)
+
+    def add_split_map(self, left_basemap: str, right_basemap: str) -> None:
+        """
+        Adds a split map to the map, displaying two basemaps side by side.
+
+        Args:
+            left_basemap (str): The name of the basemap to display on the left side.
+            right_basemap (str): The name of the basemap to display on the right side.
+
+        Raises:
+            ValueError: If the provided basemap names are not supported.
+        """
+        basemaps = {
+            "OpenStreetMap": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            "Stamen Terrain": "http://{s}.tile.stamen.com/terrain/{z}/{x}/{y}.png",
+            "Stamen Toner": "http://{s}.tile.stamen.com/toner/{z}/{x}/{y}.png",
+            "Stamen Watercolor": "http://{s}.tile.stamen.com/watercolor/{z}/{x}/{y}.jpg",
+        }
+
+        if left_basemap not in basemaps or right_basemap not in basemaps:
+            raise ValueError("Invalid basemap name. Supported basemaps are: " + ", ".join(basemaps.keys()))
+
+        left_layer = folium.TileLayer(tiles=basemaps[left_basemap], name=f"Left: {left_basemap}")
+        right_layer = folium.TileLayer(tiles=basemaps[right_basemap], name=f"Right: {right_basemap}")
+
+        left_layer.add_to(self)
+        right_layer.add_to(self) 

@@ -83,6 +83,7 @@ nav:
         - examples/intro.ipynb
         - examples/folium.ipynb
         - examples/ipyleaflet.ipynb
+        - examples/split_map.ipynb
 
     - API Reference:
           - salmongis module: salmongis.md
