@@ -1,5 +1,7 @@
 folium
 geopandas
 ipyleaflet
-numpy
+leafmap
 localtileserver
+matplotlib
+numpy
