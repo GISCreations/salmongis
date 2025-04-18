@@ -5,3 +5,4 @@ leafmap
 localtileserver
 matplotlib
 numpy
+ipywidgets

@@ -3,7 +3,7 @@
 import ipyleaflet
 import geopandas as gpd
 from ipyleaflet import GeoJSON
-
+import ipywidgets as widgets
 
 
 class Map(ipyleaflet.Map):
@@ -132,3 +132,79 @@ class Map(ipyleaflet.Map):
         """
         wms_layer = ipyleaflet.WMSLayer(url=url, layers=layers, format = format, transparent = transparent,  **kwargs)
         self.add(wms_layer)
+    
+    def add_basemap_gui(self, options=None, position="topright"):
+        """
+        Adds a graphical user interface (GUI) for selecting and switching basemaps.
+
+        This function creates a toggle button, dropdown menu, and close button
+        to allow users to interactively select a basemap from a predefined list
+        and apply it to the map.
+
+        Args:
+            options (list, optional): A list of basemap names (strings) to display
+                in the dropdown menu. Defaults to a list of common basemaps:
+                ["OpenStreetMap.Mapnik", "OpenTopoMap", "Esri.WorldImagery", "CartoDB.DarkMatter"].
+            position (str, optional): The position of the GUI widget on the map.
+                Defaults to "topright". Valid positions include "topleft", "topright",
+                "bottomleft", and "bottomright".
+
+        Returns:
+            None
+        """
+        if options is None:
+            options = [
+                "OpenStreetMap.Mapnik",
+                "OpenTopoMap",
+                "Esri.WorldImagery",
+                "CartoDB.DarkMatter",
+            ]
+
+        toggle = widgets.ToggleButton(
+            value=True,
+            button_style="",
+            tooltip="Click me",
+            icon="map",
+        )
+        toggle.layout = widgets.Layout(width="38px", height="38px")
+
+        dropdown = widgets.Dropdown(
+            options=options,
+            value=options[0],
+            description="Basemap:",
+            style={"description_width": "initial"},
+        )
+        dropdown.layout = widgets.Layout(width="250px", height="38px")
+
+        button = widgets.Button(
+            icon="times",
+        )
+        button.layout = widgets.Layout(width="38px", height="38px")
+
+        hbox = widgets.HBox([toggle, dropdown, button])
+
+        def on_toggle_change(change):
+            if change["new"]:
+                hbox.children = [toggle, dropdown, button]
+            else:
+                hbox.children = [toggle]
+
+        toggle.observe(on_toggle_change, names="value")
+
+        def on_button_click(b):
+            hbox.close()
+            toggle.close()
+            dropdown.close()
+            button.close()
+
+        button.on_click(on_button_click)
+
+        def on_dropdown_change(change):
+            if change["new"]:
+                self.layers = self.layers[:-2]
+                self.add_basemap(change["new"])
+
+        dropdown.observe(on_dropdown_change, names="value")
+
+        control = ipyleaflet.WidgetControl(widget=hbox, position=position)
+        self.add(control)
