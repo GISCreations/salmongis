@@ -5,6 +5,9 @@ import geopandas as gpd
 from ipyleaflet import GeoJSON
 import ipywidgets as widgets
 import xarray as xr
+import matplotlib.pyplot as plt
+import numpy as np
+import xarray as xr
 
 
 class Map(ipyleaflet.Map):
@@ -142,11 +145,28 @@ class Map(ipyleaflet.Map):
             dataset (str): The path or URL to the dataset (e.g., NetCDF file).
             **kwargs: Additional keyword arguments for ipyleaflet.GeoJSON.
         """
+        import geopandas as gpd
+
         # Load the dataset into an xarray Dataset
         ds = xr.open_dataset(dataset)
 
-        # Convert to GeoJSON
-        geojson = ds.to_geodataframe().__geo_interface__
+        # Ensure the dataset contains latitude and longitude
+        if "lat" not in ds.coords or "lon" not in ds.coords:
+            raise ValueError("The NetCDF file must contain 'lat' and 'lon' coordinates.")
+
+        # Convert the dataset to a pandas DataFrame
+        df = ds.to_dataframe().reset_index()
+
+        # Create a GeoDataFrame
+        gdf = gpd.GeoDataFrame(
+            df,
+            geometry=gpd.points_from_xy(df["lon"], df["lat"]),
+            crs="EPSG:4326"  # WGS84 coordinate system
+        )
+
+        # Convert the GeoDataFrame to GeoJSON
+        geojson = gdf.__geo_interface__
 
         # Add the GeoJSON layer to the map
-        self.add_layer(ipyleaflet.GeoJSON(data=geojson, **kwargs))
+        geojson_layer = ipyleaflet.GeoJSON(data=geojson, **kwargs)
+        self.add(geojson_layer)
