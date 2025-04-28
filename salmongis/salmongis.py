@@ -4,6 +4,7 @@ import ipyleaflet
 import geopandas as gpd
 from ipyleaflet import GeoJSON
 import ipywidgets as widgets
+import xarray as xr
 
 
 class Map(ipyleaflet.Map):
@@ -133,78 +134,19 @@ class Map(ipyleaflet.Map):
         wms_layer = ipyleaflet.WMSLayer(url=url, layers=layers, format = format, transparent = transparent,  **kwargs)
         self.add(wms_layer)
     
-    def add_basemap_gui(self, options=None, position="topright"):
+    def add_dataset(self, dataset, **kwargs):
         """
-        Adds a graphical user interface (GUI) for selecting and switching basemaps.
-
-        This function creates a toggle button, dropdown menu, and close button
-        to allow users to interactively select a basemap from a predefined list
-        and apply it to the map.
+        Adds a dataset to the map.
 
         Args:
-            options (list, optional): A list of basemap names (strings) to display
-                in the dropdown menu. Defaults to a list of common basemaps:
-                ["OpenStreetMap.Mapnik", "OpenTopoMap", "Esri.WorldImagery", "CartoDB.DarkMatter"].
-            position (str, optional): The position of the GUI widget on the map.
-                Defaults to "topright". Valid positions include "topleft", "topright",
-                "bottomleft", and "bottomright".
-
-        Returns:
-            None
+            dataset (str): The path or URL to the dataset (e.g., NetCDF file).
+            **kwargs: Additional keyword arguments for ipyleaflet.GeoJSON.
         """
-        if options is None:
-            options = [
-                "OpenStreetMap.Mapnik",
-                "OpenTopoMap",
-                "Esri.WorldImagery",
-                "CartoDB.DarkMatter",
-            ]
+        # Load the dataset into an xarray Dataset
+        ds = xr.open_dataset(dataset)
 
-        toggle = widgets.ToggleButton(
-            value=True,
-            button_style="",
-            tooltip="Click me",
-            icon="map",
-        )
-        toggle.layout = widgets.Layout(width="38px", height="38px")
+        # Convert to GeoJSON
+        geojson = ds.to_geodataframe().__geo_interface__
 
-        dropdown = widgets.Dropdown(
-            options=options,
-            value=options[0],
-            description="Basemap:",
-            style={"description_width": "initial"},
-        )
-        dropdown.layout = widgets.Layout(width="250px", height="38px")
-
-        button = widgets.Button(
-            icon="times",
-        )
-        button.layout = widgets.Layout(width="38px", height="38px")
-
-        hbox = widgets.HBox([toggle, dropdown, button])
-
-        def on_toggle_change(change):
-            if change["new"]:
-                hbox.children = [toggle, dropdown, button]
-            else:
-                hbox.children = [toggle]
-
-        toggle.observe(on_toggle_change, names="value")
-
-        def on_button_click(b):
-            hbox.close()
-            toggle.close()
-            dropdown.close()
-            button.close()
-
-        button.on_click(on_button_click)
-
-        def on_dropdown_change(change):
-            if change["new"]:
-                self.layers = self.layers[:-2]
-                self.add_basemap(change["new"])
-
-        dropdown.observe(on_dropdown_change, names="value")
-
-        control = ipyleaflet.WidgetControl(widget=hbox, position=position)
-        self.add(control)
+        # Add the GeoJSON layer to the map
+        self.add_layer(ipyleaflet.GeoJSON(data=geojson, **kwargs))
