@@ -137,36 +137,29 @@ class Map(ipyleaflet.Map):
         wms_layer = ipyleaflet.WMSLayer(url=url, layers=layers, format = format, transparent = transparent,  **kwargs)
         self.add(wms_layer)
     
-    def add_dataset(self, dataset, **kwargs):
+    def add_dataset(self, dataset, var, file_name=None, **kwargs):
         """
-        Adds a dataset to the map.
+        Adds a dataset to the map and optionally saves the plot.
 
         Args:
             dataset (str): The path or URL to the dataset (e.g., NetCDF file).
+            var (str): The variable in the dataset to plot.
+            file_name (str, optional): The file name to save the plot. Defaults to None.
             **kwargs: Additional keyword arguments for ipyleaflet.GeoJSON.
         """
         import geopandas as gpd
+        import matplotlib.pyplot as plt
 
         # Load the dataset into an xarray Dataset
         ds = xr.open_dataset(dataset)
+        plotted = ds[var]
 
-        # Ensure the dataset contains latitude and longitude
-        if "lat" not in ds.coords or "lon" not in ds.coords:
-            raise ValueError("The NetCDF file must contain 'lat' and 'lon' coordinates.")
+        # Plot the variable
+        plotted.plot()
 
-        # Convert the dataset to a pandas DataFrame
-        df = ds.to_dataframe().reset_index()
+        # Save the plot if a file name is provided
+        if file_name:
+            plt.savefig(file_name)
+            print(f"Plot saved as {file_name}")
 
-        # Create a GeoDataFrame
-        gdf = gpd.GeoDataFrame(
-            df,
-            geometry=gpd.points_from_xy(df["lon"], df["lat"]),
-            crs="EPSG:4326"  # WGS84 coordinate system
-        )
-
-        # Convert the GeoDataFrame to GeoJSON
-        geojson = gdf.__geo_interface__
-
-        # Add the GeoJSON layer to the map
-        geojson_layer = ipyleaflet.GeoJSON(data=geojson, **kwargs)
-        self.add(geojson_layer)
+        return plotted
