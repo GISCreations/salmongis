@@ -2,6 +2,8 @@ import ipyleaflet
 import geopandas as gpd
 from ipyleaflet import GeoJSON
 import ipywidgets as widgets
+import base64
+from pathlib import Path
 
 
 class Map(ipyleaflet.Map):
@@ -232,3 +234,32 @@ class Map(ipyleaflet.Map):
         vbox = widgets.VBox([dropdown, sliders])
         control = ipyleaflet.WidgetControl(widget=vbox, position=position)
         self.add(control)
+
+    def add_video(self, video_url, bounds, opacity=0.7, name="Video Overlay", zoom_to_layer=True):
+        """
+        Adds a video overlay to the map using a video URL.
+
+        Args:
+            video_url (str): The URL of the MP4 video to be added.
+            bounds (list): The geographical bounds for the video overlay as [[lat_min, lon_min], [lat_max, lon_max]].
+            opacity (float, optional): The opacity of the video overlay. Defaults to 0.7.
+            name (str, optional): The name of the video overlay. Defaults to "Video Overlay".
+            zoom_to_layer (bool, optional): Whether to zoom the map to the video layer. Defaults to True.
+
+        Returns:
+            None
+        """
+        # Create the video overlay using the provided URL
+        video_overlay = ipyleaflet.VideoOverlay(
+            url=video_url,
+            bounds=bounds,
+            opacity=opacity,
+            name=name,
+        )
+
+        # Add the video overlay to the map
+        self.add(video_overlay)
+
+        # Zoom to the layer if the option is enabled
+        if zoom_to_layer:
+            self.fit_bounds(bounds)
