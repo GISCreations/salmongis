@@ -263,3 +263,196 @@ class Map(ipyleaflet.Map):
         # Zoom to the layer if the option is enabled
         if zoom_to_layer:
             self.fit_bounds(bounds)
+
+    def add_title(self, title="Map Title", position="topleft", font_size="16px", font_color="black"):
+        """
+        Adds a title to the map with dynamic controls to change its properties.
+
+        Args:
+            title (str, optional): The initial text of the title to be displayed on the map. Defaults to "Map Title".
+            position (str, optional): The initial position of the title on the map. Defaults to "topleft".
+            font_size (str, optional): The initial font size of the title. Defaults to "16px".
+            font_color (str, optional): The initial font color of the title. Defaults to "black".
+
+        Returns:
+            None
+        """
+        # Create a label widget for the title
+        title_widget = widgets.HTML(
+            value=f"<div style='color:{font_color}; font-size:{font_size}; text-align:center;'>{title}</div>"
+        )
+
+        # Add the title widget to the map as a WidgetControl
+        title_control = ipyleaflet.WidgetControl(widget=title_widget, position=position)
+        self.add_control(title_control)
+
+        # Create widgets for dynamic control
+        title_input = widgets.Text(value=title, description="Title:")
+        font_size_slider = widgets.IntSlider(value=int(font_size[:-2]), min=10, max=50, step=1, description="Font Size:")
+        font_color_picker = widgets.ColorPicker(value=font_color, description="Font Color:")
+        position_dropdown = widgets.Dropdown(
+            options=["topright", "topleft", "bottomright", "bottomleft"],
+            value=position,
+            description="Position:",
+        )
+
+        # Function to update the title properties
+        def update_title(change):
+            nonlocal title_control  # Ensure we update the reference to the control
+            title_widget.value = (
+                f"<div style='color:{font_color_picker.value}; font-size:{font_size_slider.value}px; text-align:center;'>"
+                f"{title_input.value}</div>"
+            )
+
+            # Update the position of the title
+            self.remove_control(title_control)
+            title_control = ipyleaflet.WidgetControl(widget=title_widget, position=position_dropdown.value)
+            self.add_control(title_control)
+
+        # Observe changes in the widgets
+        title_input.observe(update_title, names="value")
+        font_size_slider.observe(update_title, names="value")
+        font_color_picker.observe(update_title, names="value")
+        position_dropdown.observe(update_title, names="value")
+
+        # Create a control panel for the widgets
+        control_panel = widgets.VBox([title_input, font_size_slider, font_color_picker, position_dropdown])
+        control_panel_control = ipyleaflet.WidgetControl(widget=control_panel, position="topright")
+        self.add_control(control_panel_control)
+
+    def add_combined_ui(self, options=None, video_bounds=None, title="Map Title", position="topleft", font_size="16px", font_color="black"):
+        """
+        Combines all functionalities (image GUI, video overlay, and title) into one unified UI.
+
+        Args:
+            options (dict, optional): A dictionary for image options where keys are image names (strings)
+                and values are tuples containing the image URL (str) and bounds (list).
+            video_bounds (list, optional): The geographical bounds for the video overlay as [[lat_min, lon_min], [lat_max, lon_max]].
+            title (str, optional): The initial text of the title to be displayed on the map. Defaults to "Map Title".
+            position (str, optional): The initial position of the title on the map. Defaults to "topleft".
+            font_size (str, optional): The initial font size of the title. Defaults to "16px".
+            font_color (str, optional): The initial font color of the title. Defaults to "black".
+
+        Returns:
+            None
+        """
+        if options is None:
+            options = {
+                "Sample Image 1": (
+                    "https://example.com/sample1.png",
+                    [[-90, -180], [90, 180]],
+                ),
+                "Sample Image 2": (
+                    "https://example.com/sample2.png",
+                    [[10, -50], [20, 50]],
+                ),
+            }
+
+        if video_bounds is None:
+            video_bounds = [[-10, -20], [10, 20]]
+
+        # Widgets for image GUI
+        image_dropdown = widgets.Dropdown(
+            options=["Select an image"] + list(options.keys()),
+            value="Select an image",
+            description="Image:",
+        )
+        lat_min_slider = widgets.FloatSlider(value=0, min=-90, max=90, step=0.1, description="Lat Min:")
+        lon_min_slider = widgets.FloatSlider(value=0, min=-180, max=180, step=0.1, description="Lon Min:")
+        lat_max_slider = widgets.FloatSlider(value=0, min=-90, max=90, step=0.1, description="Lat Max:")
+        lon_max_slider = widgets.FloatSlider(value=0, min=-180, max=180, step=0.1, description="Lon Max:")
+        image_sliders = widgets.VBox([lat_min_slider, lon_min_slider, lat_max_slider, lon_max_slider])
+
+        # Widgets for video overlay
+        video_url_input = widgets.Text(value="https://example.com/sample_video.mp4", description="Video URL:")
+        video_opacity_slider = widgets.FloatSlider(value=0.7, min=0, max=1, step=0.1, description="Opacity:")
+
+        # Widgets for title
+        title_input = widgets.Text(value=title, description="Title:")
+        font_size_slider = widgets.IntSlider(value=int(font_size[:-2]), min=10, max=50, step=1, description="Font Size:")
+        font_color_picker = widgets.ColorPicker(value=font_color, description="Font Color:")
+        position_dropdown = widgets.Dropdown(
+            options=["topleft", "topright", "topleft", "bottomright", "bottomleft"],
+            value=position,
+            description="Position:",
+        )
+
+        # Dictionary to keep track of overlays
+        current_overlay = {"image": None, "video": None}
+
+        # Create the title widget and control
+        title_widget = widgets.HTML(
+            value=f"<div style='color:{font_color}; font-size:{font_size}; text-align:center;'>{title}</div>"
+        )
+        title_control = ipyleaflet.WidgetControl(widget=title_widget, position=position)
+        self.add_control(title_control)
+
+        # Functions for updating the map
+        def update_image(change):
+            selected_image = image_dropdown.value
+            if selected_image == "Select an image":
+                if current_overlay["image"]:
+                    self.remove(current_overlay["image"])
+                    current_overlay["image"] = None
+            else:
+                if current_overlay["image"]:
+                    self.remove(current_overlay["image"])
+                image_url, bounds = options[selected_image]
+                lat_min_slider.value, lon_min_slider.value = bounds[0]
+                lat_max_slider.value, lon_max_slider.value = bounds[1]
+                overlay = ipyleaflet.ImageOverlay(url=image_url, bounds=bounds)
+                self.add(overlay)
+                current_overlay["image"] = overlay
+
+        def update_image_bounds(change):
+            if current_overlay["image"]:
+                new_bounds = [
+                    [lat_min_slider.value, lon_min_slider.value],
+                    [lat_max_slider.value, lon_max_slider.value],
+                ]
+                current_overlay["image"].bounds = new_bounds
+
+        def add_video_overlay(change):
+            if current_overlay["video"]:
+                self.remove(current_overlay["video"])
+            video_url = video_url_input.value
+            overlay = ipyleaflet.VideoOverlay(
+                url=video_url,
+                bounds=video_bounds,
+                opacity=video_opacity_slider.value,
+            )
+            self.add(overlay)
+            current_overlay["video"] = overlay
+
+        def update_title(change):
+            title_widget.value = (
+                f"<div style='color:{font_color_picker.value}; font-size:{font_size_slider.value}px; text-align:center;'>"
+                f"{title_input.value}</div>"
+            )
+            self.remove_control(title_control)
+            new_control = ipyleaflet.WidgetControl(widget=title_widget, position=position_dropdown.value)
+            self.add_control(new_control)
+
+        # Observe changes in widgets
+        image_dropdown.observe(update_image, names="value")
+        lat_min_slider.observe(update_image_bounds, names="value")
+        lon_min_slider.observe(update_image_bounds, names="value")
+        lat_max_slider.observe(update_image_bounds, names="value")
+        lon_max_slider.observe(update_image_bounds, names="value")
+        video_url_input.observe(add_video_overlay, names="value")
+        video_opacity_slider.observe(add_video_overlay, names="value")
+        title_input.observe(update_title, names="value")
+        font_size_slider.observe(update_title, names="value")
+        font_color_picker.observe(update_title, names="value")
+        position_dropdown.observe(update_title, names="value")
+
+        # Create control panels
+        image_control_panel = widgets.VBox([image_dropdown, image_sliders])
+        video_control_panel = widgets.VBox([video_url_input, video_opacity_slider])
+        title_control_panel = widgets.VBox([title_input, font_size_slider, font_color_picker, position_dropdown])
+
+        # Add control panels to the map
+        self.add_control(ipyleaflet.WidgetControl(widget=image_control_panel, position="topright"))
+        self.add_control(ipyleaflet.WidgetControl(widget=video_control_panel, position="bottomright"))
+        self.add_control(ipyleaflet.WidgetControl(widget=title_control_panel, position="bottomleft"))
+
