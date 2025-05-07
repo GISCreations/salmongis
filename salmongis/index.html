@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://GISCreations.github.io/salmongis/salmongis/">
       
       
-        <link rel="prev" href="../examples/widgets/">
+        <link rel="prev" href="../examples/raster/">
       
       
         <link rel="next" href="../common/">
@@ -576,12 +576,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../examples/widgets/" class="md-nav__link">
+      <a href="../examples/widgets.ipynb" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Widgets
+    None
     
   </span>
   
@@ -733,9 +733,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#salmongis.salmongis.Map.add_basemap_gui" class="md-nav__link">
+  <a href="#salmongis.salmongis.Map.add_dataset" class="md-nav__link">
     <span class="md-ellipsis">
-      add_basemap_gui()
+      add_dataset()
     </span>
   </a>
   
@@ -926,9 +926,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#salmongis.salmongis.Map.add_basemap_gui" class="md-nav__link">
+  <a href="#salmongis.salmongis.Map.add_dataset" class="md-nav__link">
     <span class="md-ellipsis">
-      add_basemap_gui()
+      add_dataset()
     </span>
   </a>
   
@@ -1153,7 +1153,7 @@ Map            (<span title="ipyleaflet.leaflet.Map">Map</span>)
 <span class="sd">        **kwargs: Additional keyword arguments for the ipyleaflet. ImageOverlay layer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
-            <span class="n">bounds</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">180</span><span class="p">]</span> <span class="p">[</span><span class="mi">90</span><span class="p">,</span><span class="mi">1801</span><span class="p">]]</span>
+            <span class="n">bounds</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">180</span><span class="p">],</span> <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">]]</span>
         <span class="n">overlay</span> <span class="o">=</span> <span class="n">ipyleaflet</span><span class="o">.</span><span class="n">ImageOverlay</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">overlay</span><span class="p">)</span>
 
@@ -1165,7 +1165,7 @@ Map            (<span title="ipyleaflet.leaflet.Map">Map</span>)
 <span class="sd">        **kwargs: Additional keyword arguments for the ipyleaflet. VideoOverlay layer.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
-            <span class="n">bounds</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">180</span><span class="p">]</span> <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">]]</span>
+            <span class="n">bounds</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">180</span><span class="p">],</span> <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">]]</span>
         <span class="n">overlay</span> <span class="o">=</span> <span class="n">ipyleaflet</span><span class="o">.</span><span class="n">VideoOverlay</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">video</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">overlay</span><span class="p">)</span>
 
@@ -1181,81 +1181,32 @@ Map            (<span title="ipyleaflet.leaflet.Map">Map</span>)
         <span class="n">wms_layer</span> <span class="o">=</span> <span class="n">ipyleaflet</span><span class="o">.</span><span class="n">WMSLayer</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">layers</span><span class="o">=</span><span class="n">layers</span><span class="p">,</span> <span class="nb">format</span> <span class="o">=</span> <span class="nb">format</span><span class="p">,</span> <span class="n">transparent</span> <span class="o">=</span> <span class="n">transparent</span><span class="p">,</span>  <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">wms_layer</span><span class="p">)</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_basemap_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;topright&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Adds a graphical user interface (GUI) for selecting and switching basemaps.</span>
-
-<span class="sd">        This function creates a toggle button, dropdown menu, and close button</span>
-<span class="sd">        to allow users to interactively select a basemap from a predefined list</span>
-<span class="sd">        and apply it to the map.</span>
+<span class="sd">        Adds a dataset to the map and optionally saves the plot.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            options (list, optional): A list of basemap names (strings) to display</span>
-<span class="sd">                in the dropdown menu. Defaults to a list of common basemaps:</span>
-<span class="sd">                [&quot;OpenStreetMap.Mapnik&quot;, &quot;OpenTopoMap&quot;, &quot;Esri.WorldImagery&quot;, &quot;CartoDB.DarkMatter&quot;].</span>
-<span class="sd">            position (str, optional): The position of the GUI widget on the map.</span>
-<span class="sd">                Defaults to &quot;topright&quot;. Valid positions include &quot;topleft&quot;, &quot;topright&quot;,</span>
-<span class="sd">                &quot;bottomleft&quot;, and &quot;bottomright&quot;.</span>
-
-<span class="sd">        Returns:</span>
-<span class="sd">            None</span>
+<span class="sd">            dataset (str): The path or URL to the dataset (e.g., NetCDF file).</span>
+<span class="sd">            var (str): The variable in the dataset to plot.</span>
+<span class="sd">            file_name (str, optional): The file name to save the plot. Defaults to None.</span>
+<span class="sd">            **kwargs: Additional keyword arguments for ipyleaflet.GeoJSON.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">options</span> <span class="o">=</span> <span class="p">[</span>
-                <span class="s2">&quot;OpenStreetMap.Mapnik&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;OpenTopoMap&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;Esri.WorldImagery&quot;</span><span class="p">,</span>
-                <span class="s2">&quot;CartoDB.DarkMatter&quot;</span><span class="p">,</span>
-            <span class="p">]</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
-        <span class="n">toggle</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">ToggleButton</span><span class="p">(</span>
-            <span class="n">value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="n">button_style</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-            <span class="n">tooltip</span><span class="o">=</span><span class="s2">&quot;Click me&quot;</span><span class="p">,</span>
-            <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;map&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">toggle</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;38px&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s2">&quot;38px&quot;</span><span class="p">)</span>
+        <span class="c1"># Load the dataset into an xarray Dataset</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="n">plotted</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
 
-        <span class="n">dropdown</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Dropdown</span><span class="p">(</span>
-            <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
-            <span class="n">value</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Basemap:&quot;</span><span class="p">,</span>
-            <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;description_width&quot;</span><span class="p">:</span> <span class="s2">&quot;initial&quot;</span><span class="p">},</span>
-        <span class="p">)</span>
-        <span class="n">dropdown</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;250px&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s2">&quot;38px&quot;</span><span class="p">)</span>
+        <span class="c1"># Plot the variable</span>
+        <span class="n">plotted</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 
-        <span class="n">button</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span>
-            <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;times&quot;</span><span class="p">,</span>
-        <span class="p">)</span>
-        <span class="n">button</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;38px&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s2">&quot;38px&quot;</span><span class="p">)</span>
+        <span class="c1"># Save the plot if a file name is provided</span>
+        <span class="k">if</span> <span class="n">file_name</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plot saved as </span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-        <span class="n">hbox</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">HBox</span><span class="p">([</span><span class="n">toggle</span><span class="p">,</span> <span class="n">dropdown</span><span class="p">,</span> <span class="n">button</span><span class="p">])</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">on_toggle_change</span><span class="p">(</span><span class="n">change</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s2">&quot;new&quot;</span><span class="p">]:</span>
-                <span class="n">hbox</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">toggle</span><span class="p">,</span> <span class="n">dropdown</span><span class="p">,</span> <span class="n">button</span><span class="p">]</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">hbox</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">toggle</span><span class="p">]</span>
-
-        <span class="n">toggle</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">on_toggle_change</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">on_button_click</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
-            <span class="n">hbox</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="n">toggle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="n">dropdown</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="n">button</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-        <span class="n">button</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="n">on_button_click</span><span class="p">)</span>
-
-        <span class="k">def</span><span class="w"> </span><span class="nf">on_dropdown_change</span><span class="p">(</span><span class="n">change</span><span class="p">):</span>
-            <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s2">&quot;new&quot;</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add_basemap</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s2">&quot;new&quot;</span><span class="p">])</span>
-
-        <span class="n">dropdown</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">on_dropdown_change</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
-
-        <span class="n">control</span> <span class="o">=</span> <span class="n">ipyleaflet</span><span class="o">.</span><span class="n">WidgetControl</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">hbox</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">plotted</span>
 </code></pre></div>
         </details>
 
@@ -1406,18 +1357,15 @@ available in ipyleaflet.basemaps.</p></td>
 
 
 
-<h3 id="salmongis.salmongis.Map.add_basemap_gui" class="doc doc-heading">
-<code class="highlight language-python"><span class="n">add_basemap_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s1">&#39;topright&#39;</span><span class="p">)</span></code>
+<h3 id="salmongis.salmongis.Map.add_dataset" class="doc doc-heading">
+<code class="highlight language-python"><span class="n">add_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></code>
 
 
-<a href="#salmongis.salmongis.Map.add_basemap_gui" class="headerlink" title="Permanent link">&para;</a></h3>
+<a href="#salmongis.salmongis.Map.add_dataset" class="headerlink" title="Permanent link">&para;</a></h3>
 
     <div class="doc doc-contents ">
 
-      <p>Adds a graphical user interface (GUI) for selecting and switching basemaps.</p>
-<p>This function creates a toggle button, dropdown menu, and close button
-to allow users to interactively select a basemap from a predefined list
-and apply it to the map.</p>
+      <p>Adds a dataset to the map and optionally saves the plot.</p>
 
 <p><strong>Parameters:</strong></p>
 <table>
@@ -1431,115 +1379,59 @@ and apply it to the map.</p>
   </thead>
   <tbody>
       <tr>
-        <td><code>options</code></td>
-        <td><code>list</code></td>
-        <td><p>A list of basemap names (strings) to display
-in the dropdown menu. Defaults to a list of common basemaps:
-["OpenStreetMap.Mapnik", "OpenTopoMap", "Esri.WorldImagery", "CartoDB.DarkMatter"].</p></td>
+        <td><code>dataset</code></td>
+        <td><code>str</code></td>
+        <td><p>The path or URL to the dataset (e.g., NetCDF file).</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>var</code></td>
+        <td><code>str</code></td>
+        <td><p>The variable in the dataset to plot.</p></td>
+        <td><em>required</em></td>
+      </tr>
+      <tr>
+        <td><code>file_name</code></td>
+        <td><code>str</code></td>
+        <td><p>The file name to save the plot. Defaults to None.</p></td>
         <td><code>None</code></td>
       </tr>
       <tr>
-        <td><code>position</code></td>
-        <td><code>str</code></td>
-        <td><p>The position of the GUI widget on the map.
-Defaults to "topright". Valid positions include "topleft", "topright",
-"bottomleft", and "bottomright".</p></td>
-        <td><code>&#39;topright&#39;</code></td>
+        <td><code>**kwargs</code></td>
+        <td></td>
+        <td><p>Additional keyword arguments for ipyleaflet.GeoJSON.</p></td>
+        <td><code>{}</code></td>
       </tr>
-  </tbody>
-</table>
-<p><strong>Returns:</strong></p>
-<table>
-  <thead>
-    <tr>
-      <th>Type</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td></td>
-      <td><p>None</p></td>
-    </tr>
   </tbody>
 </table>
         <details class="quote">
           <summary>Source code in <code>salmongis/salmongis.py</code></summary>
-          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_basemap_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;topright&quot;</span><span class="p">):</span>
+          <div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">add_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">file_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Adds a graphical user interface (GUI) for selecting and switching basemaps.</span>
-
-<span class="sd">    This function creates a toggle button, dropdown menu, and close button</span>
-<span class="sd">    to allow users to interactively select a basemap from a predefined list</span>
-<span class="sd">    and apply it to the map.</span>
+<span class="sd">    Adds a dataset to the map and optionally saves the plot.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        options (list, optional): A list of basemap names (strings) to display</span>
-<span class="sd">            in the dropdown menu. Defaults to a list of common basemaps:</span>
-<span class="sd">            [&quot;OpenStreetMap.Mapnik&quot;, &quot;OpenTopoMap&quot;, &quot;Esri.WorldImagery&quot;, &quot;CartoDB.DarkMatter&quot;].</span>
-<span class="sd">        position (str, optional): The position of the GUI widget on the map.</span>
-<span class="sd">            Defaults to &quot;topright&quot;. Valid positions include &quot;topleft&quot;, &quot;topright&quot;,</span>
-<span class="sd">            &quot;bottomleft&quot;, and &quot;bottomright&quot;.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        None</span>
+<span class="sd">        dataset (str): The path or URL to the dataset (e.g., NetCDF file).</span>
+<span class="sd">        var (str): The variable in the dataset to plot.</span>
+<span class="sd">        file_name (str, optional): The file name to save the plot. Defaults to None.</span>
+<span class="sd">        **kwargs: Additional keyword arguments for ipyleaflet.GeoJSON.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">options</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="s2">&quot;OpenStreetMap.Mapnik&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;OpenTopoMap&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;Esri.WorldImagery&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;CartoDB.DarkMatter&quot;</span><span class="p">,</span>
-        <span class="p">]</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
-    <span class="n">toggle</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">ToggleButton</span><span class="p">(</span>
-        <span class="n">value</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-        <span class="n">button_style</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span>
-        <span class="n">tooltip</span><span class="o">=</span><span class="s2">&quot;Click me&quot;</span><span class="p">,</span>
-        <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;map&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">toggle</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;38px&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s2">&quot;38px&quot;</span><span class="p">)</span>
+    <span class="c1"># Load the dataset into an xarray Dataset</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+    <span class="n">plotted</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">var</span><span class="p">]</span>
 
-    <span class="n">dropdown</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Dropdown</span><span class="p">(</span>
-        <span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
-        <span class="n">value</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Basemap:&quot;</span><span class="p">,</span>
-        <span class="n">style</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;description_width&quot;</span><span class="p">:</span> <span class="s2">&quot;initial&quot;</span><span class="p">},</span>
-    <span class="p">)</span>
-    <span class="n">dropdown</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;250px&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s2">&quot;38px&quot;</span><span class="p">)</span>
+    <span class="c1"># Plot the variable</span>
+    <span class="n">plotted</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
 
-    <span class="n">button</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Button</span><span class="p">(</span>
-        <span class="n">icon</span><span class="o">=</span><span class="s2">&quot;times&quot;</span><span class="p">,</span>
-    <span class="p">)</span>
-    <span class="n">button</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">Layout</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="s2">&quot;38px&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="s2">&quot;38px&quot;</span><span class="p">)</span>
+    <span class="c1"># Save the plot if a file name is provided</span>
+    <span class="k">if</span> <span class="n">file_name</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Plot saved as </span><span class="si">{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
-    <span class="n">hbox</span> <span class="o">=</span> <span class="n">widgets</span><span class="o">.</span><span class="n">HBox</span><span class="p">([</span><span class="n">toggle</span><span class="p">,</span> <span class="n">dropdown</span><span class="p">,</span> <span class="n">button</span><span class="p">])</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">on_toggle_change</span><span class="p">(</span><span class="n">change</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s2">&quot;new&quot;</span><span class="p">]:</span>
-            <span class="n">hbox</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">toggle</span><span class="p">,</span> <span class="n">dropdown</span><span class="p">,</span> <span class="n">button</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">hbox</span><span class="o">.</span><span class="n">children</span> <span class="o">=</span> <span class="p">[</span><span class="n">toggle</span><span class="p">]</span>
-
-    <span class="n">toggle</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">on_toggle_change</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">on_button_click</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
-        <span class="n">hbox</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="n">toggle</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="n">dropdown</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-        <span class="n">button</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-    <span class="n">button</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="n">on_button_click</span><span class="p">)</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">on_dropdown_change</span><span class="p">(</span><span class="n">change</span><span class="p">):</span>
-        <span class="k">if</span> <span class="n">change</span><span class="p">[</span><span class="s2">&quot;new&quot;</span><span class="p">]:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">layers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">layers</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">add_basemap</span><span class="p">(</span><span class="n">change</span><span class="p">[</span><span class="s2">&quot;new&quot;</span><span class="p">])</span>
-
-    <span class="n">dropdown</span><span class="o">.</span><span class="n">observe</span><span class="p">(</span><span class="n">on_dropdown_change</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="s2">&quot;value&quot;</span><span class="p">)</span>
-
-    <span class="n">control</span> <span class="o">=</span> <span class="n">ipyleaflet</span><span class="o">.</span><span class="n">WidgetControl</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">hbox</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="n">position</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">control</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">plotted</span>
 </code></pre></div>
         </details>
     </div>
@@ -1643,7 +1535,7 @@ Defaults to "topright". Valid positions include "topleft", "topright",
 <span class="sd">    **kwargs: Additional keyword arguments for the ipyleaflet. ImageOverlay layer.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
-        <span class="n">bounds</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">180</span><span class="p">]</span> <span class="p">[</span><span class="mi">90</span><span class="p">,</span><span class="mi">1801</span><span class="p">]]</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">180</span><span class="p">],</span> <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">]]</span>
     <span class="n">overlay</span> <span class="o">=</span> <span class="n">ipyleaflet</span><span class="o">.</span><span class="n">ImageOverlay</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">overlay</span><span class="p">)</span>
 </code></pre></div>
@@ -1787,7 +1679,7 @@ Defaults to "topright". Valid positions include "topleft", "topright",
 <span class="sd">    **kwargs: Additional keyword arguments for the ipyleaflet. VideoOverlay layer.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">bounds</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
-        <span class="n">bounds</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">180</span><span class="p">]</span> <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">]]</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="p">[[</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="o">-</span><span class="mi">180</span><span class="p">],</span> <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">]]</span>
     <span class="n">overlay</span> <span class="o">=</span> <span class="n">ipyleaflet</span><span class="o">.</span><span class="n">VideoOverlay</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">video</span><span class="p">,</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">overlay</span><span class="p">)</span>
 </code></pre></div>
