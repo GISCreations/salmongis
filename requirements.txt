@@ -8,3 +8,6 @@ numpy
 ipywidgets
 xarray
 pandas
+netcdf4
+h5netcdf
+scipy
