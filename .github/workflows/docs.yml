@@ -26,8 +26,3 @@ jobs:
                   python -m unittest discover tests/
             - run: mkdocs gh-deploy --force
 
-            - name: Set up Python path
-            run: echo "PYTHONPATH=$PWD/salmongis" >> $GITHUB_ENV
-
-            - name: Run tests
-            run: python -m unittest discover tests
