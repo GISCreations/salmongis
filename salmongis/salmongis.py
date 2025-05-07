@@ -7,8 +7,6 @@ import ipywidgets as widgets
 import xarray as xr
 import matplotlib.pyplot as plt
 import numpy as np
-import xarray as xr
-
 
 class Map(ipyleaflet.Map):
     """A custom map class extending ipyleaflet.Map."""
