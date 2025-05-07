@@ -121,7 +121,7 @@ class Map(ipyleaflet.Map):
         **kwargs: Additional keyword arguments for the ipyleaflet. VideoOverlay layer.
         """
         if bounds is None: 
-            bounds = [[-90, -180] [90, 180]]
+            bounds = [[-90, -180], [90, 180]]
         overlay = ipyleaflet.VideoOverlay(url=video, bounds=bounds, **kwargs)
         self.add(overlay)
 
