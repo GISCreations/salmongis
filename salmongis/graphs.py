@@ -7,6 +7,7 @@ import ipyleaflet
 from ipyleaflet import GeoJSON
 import ipywidgets as widgets
 from localtileserver import TileClient, get_leaflet_tile_layer
+import ipyfilechooser as filechooser
 import time
 import requests
 
@@ -71,11 +72,11 @@ class Map(ipyleaflet.Map):
         }
 
         # Widgets for image GUI
-        image_dropdown = widgets.Dropdown(
-            options=["Select an image"] + list(options.keys()),
-            value="Select an image",
-            description="Image:",
-        )
+        image_chooser = filechooser.FileChooser()
+        image_chooser.title = "Select an image file"
+        image_chooser.filter_pattern = ["*.png", "*.jpg", "*.jpeg"]  # Restrict file types
+        image_chooser.use_dir_icons = True
+
         lat_min_slider = widgets.FloatSlider(value=0, min=-90, max=90, step=0.1, description="Lat Min:")
         lon_min_slider = widgets.FloatSlider(value=0, min=-180, max=180, step=0.1, description="Lon Min:")
         lat_max_slider = widgets.FloatSlider(value=0, min=-90, max=90, step=0.1, description="Lat Max:")
@@ -129,20 +130,25 @@ class Map(ipyleaflet.Map):
 
         # Functions for updating the map
         def update_image(change):
-            selected_image = image_dropdown.value
-            if selected_image == "Select an image":
+            selected_file = image_chooser.selected
+            if not selected_file:
                 if current_overlay["image"]:
                     self.remove(current_overlay["image"])
                     current_overlay["image"] = None
             else:
                 if current_overlay["image"]:
                     self.remove(current_overlay["image"])
-                image_url, bounds = options[selected_image]
-                lat_min_slider.value, lon_min_slider.value = bounds[0]
-                lat_max_slider.value, lon_max_slider.value = bounds[1]
-                overlay = ipyleaflet.ImageOverlay(url=image_url, bounds=bounds)
+                # Use bounds from sliders
+                bounds = [
+                    [lat_min_slider.value, lon_min_slider.value],
+                    [lat_max_slider.value, lon_max_slider.value],
+                ]
+                overlay = ipyleaflet.ImageOverlay(url=selected_file, bounds=bounds)
                 self.add(overlay)
                 current_overlay["image"] = overlay
+
+        # Observe changes in the FileChooser
+        image_chooser.register_callback(update_image)
 
         def update_image_bounds(change):
             if current_overlay["image"]:
@@ -223,7 +229,7 @@ class Map(ipyleaflet.Map):
                 current_overlay["video"] = overlay
 
         # Observe changes in widgets
-        image_dropdown.observe(update_image, names="value")
+        image_chooser.observe(update_image, names="value")
         lat_min_slider.observe(update_image_bounds, names="value")
         lon_min_slider.observe(update_image_bounds, names="value")
         lat_max_slider.observe(update_image_bounds, names="value")
@@ -239,7 +245,7 @@ class Map(ipyleaflet.Map):
         video_opacity_slider.observe(update_video, names="value")
 
         # Create control panels
-        image_control_panel = widgets.VBox([image_dropdown, image_sliders])
+        image_control_panel = widgets.VBox([image_chooser, image_sliders])
         video_control_panel = widgets.VBox([video_dropdown, video_opacity_slider])
         cog_control_panel = widgets.VBox([cog_dropdown, cog_opacity_slider])
         geojson_control_panel = widgets.VBox([geojson_dropdown])
