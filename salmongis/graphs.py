@@ -365,36 +365,28 @@ class Map(ipyleaflet.Map):
 
     def save_map(self):
         """
-        Adds a button to save the current map extent as a downloaded image.
+        Adds a button to save the current map extent as an HTML file.
         """
         save_button = widgets.Button(
             description="Save Map",
             button_style="success",
-            tooltip="Save the current map as an image",
+            tooltip="Save the current map as an HTML file",
             icon="download",
             layout=widgets.Layout(width="100px", height="30px"),
         )
 
-        def save_map_as_image(b):
-            print("Saving map as an image is not yet implemented.")
+        def save_map_as_html(b):
+            """
+            Saves the current map as an HTML file.
+            """
+            html_file = "map.html"
+            try:
+                # Save the map as an HTML file
+                from ipyleaflet import Map
+                Map.save(self, html_file)
+                print(f"Map saved as {html_file}. Open it in a browser to view.")
+            except Exception as e:
+                print(f"Error saving map: {e}")
 
-        save_button.on_click(save_map_as_image)
+        save_button.on_click(save_map_as_html)
         self.add_control(ipyleaflet.WidgetControl(widget=save_button, position="bottomleft"))
-
-    def add_video(self, video, bounds=None, **kwargs):
-        """
-        Adds a video overlay to the map.
-
-        Args:
-            video (str): The file path or URL to the video.
-            bounds (list, optional): The geographical bounds for the video overlay. Defaults to the entire world.
-            **kwargs: Additional keyword arguments for the ipyleaflet.VideoOverlay layer.
-
-        Returns:
-            None
-        """
-        if bounds is None:
-            bounds = [[-90, -180], [90, 180]]  # Default bounds for the video
-        overlay = ipyleaflet.VideoOverlay(url=video, bounds=bounds, **kwargs)
-        self.add(overlay)
-
