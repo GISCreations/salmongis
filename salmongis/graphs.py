@@ -1,15 +1,18 @@
+"""
+This module provides a custom `Map` class that extends `ipyleaflet.Map` to include additional functionality
+such as adding images, videos, COGs, GeoJSON layers, and a collapsible menu.
+"""
+
 import ipyleaflet
-import geopandas as gpd
 from ipyleaflet import GeoJSON
-import leafmap
 import ipywidgets as widgets
-import base64
-from pathlib import Path
 from localtileserver import TileClient, get_leaflet_tile_layer
+import time
+import requests
 
 
 class Map(ipyleaflet.Map):
-    """A custom map class extending ipyleaflet.Map."""
+    """A custom map class extending `ipyleaflet.Map`."""
 
     def __init__(self, center=[20, 0], zoom=2, height="600px", **kwargs):
         """
@@ -19,11 +22,10 @@ class Map(ipyleaflet.Map):
             center (list): The initial center of the map as [latitude, longitude].
             zoom (int): The initial zoom level of the map.
             height (str): The height of the map in pixels or percentage.
-            **kwargs: Additional keyword arguments for ipyleaflet.Map.
+            **kwargs: Additional keyword arguments for `ipyleaflet.Map`.
         """
         super().__init__(center=center, zoom=zoom, **kwargs)
         self.layout.height = height
-    
 
     def add_combined_ui(self, options=None, video_options=None, video_bounds=None, cog_options=None, geojson_options=None, title="Map Title", position="topleft", font_size="16px", font_color="black"):
         """
@@ -47,40 +49,26 @@ class Map(ipyleaflet.Map):
         Returns:
             None
         """
-        if options is None:
-            options = {
-                "Sample Image 1": (
-                    "https://example.com/sample1.png",
-                    [[-90, -180], [90, 180]],
-                ),
-                "Sample Image 2": (
-                    "https://example.com/sample2.png",
-                    [[10, -50], [20, 50]],
-                ),
-            }
-
-        if video_options is None:
-            video_options = {
-                "Sample Video 1": "https://example.com/sample_video1.mp4",
-                "Sample Video 2": "https://example.com/sample_video2.mp4",
-            }
-
-        if video_bounds is None:
-            video_bounds = [[-10, -20], [10, 20]]
-
-        if cog_options is None:
-            cog_options = {
-                "Select a COG": None,
-                "COG 1": "https://example.com/cog1.tif",
-                "COG 2": "https://example.com/cog2.tif",
-            }
-
-        if geojson_options is None:
-            geojson_options = {
-                "Select a GeoJSON": None,
-                "World Countries": "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json",
-                "World Cities": "https://github.com/opengeos/datasets/releases/download/world/world_cities.geojson",
-            }
+        # Default options
+        options = options or {
+            "Sample Image 1": ("https://example.com/sample1.png", [[-90, -180], [90, 180]]),
+            "Sample Image 2": ("https://example.com/sample2.png", [[10, -50], [20, 50]]),
+        }
+        video_options = video_options or {
+            "Sample Video 1": "https://example.com/sample_video1.mp4",
+            "Sample Video 2": "https://example.com/sample_video2.mp4",
+        }
+        video_bounds = video_bounds or [[-10, -20], [10, 20]]
+        cog_options = cog_options or {
+            "Select a COG": None,
+            "COG 1": "https://example.com/cog1.tif",
+            "COG 2": "https://example.com/cog2.tif",
+        }
+        geojson_options = geojson_options or {
+            "Select a GeoJSON": None,
+            "World Countries": "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json",
+            "World Cities": "https://github.com/opengeos/datasets/releases/download/world/world_cities.geojson",
+        }
 
         # Widgets for image GUI
         image_dropdown = widgets.Dropdown(
@@ -101,35 +89,6 @@ class Map(ipyleaflet.Map):
             description="Video:",
         )
         video_opacity_slider = widgets.FloatSlider(value=0.7, min=0, max=1, step=0.1, description="Opacity:")
-
-        def add_video_overlay(change):
-            selected_video = video_dropdown.value
-            if selected_video == "Select a video":
-                if current_overlay["video"]:
-                    self.remove(current_overlay["video"])
-                    current_overlay["video"] = None
-            else:
-                if current_overlay["video"]:
-                    self.remove(current_overlay["video"])
-                video_url = video_options[selected_video]
-                overlay = ipyleaflet.VideoOverlay(
-                    url=video_url,
-                    bounds=video_bounds,
-                    opacity=video_opacity_slider.value,
-                )
-                self.add(overlay)
-                current_overlay["video"] = overlay
-
-                # Zoom to the video layer bounds
-                self.fit_bounds(video_bounds)
-
-        # Observe changes in the video dropdown and opacity slider
-        video_dropdown.observe(add_video_overlay, names="value")
-        video_opacity_slider.observe(add_video_overlay, names="value")
-
-        # Create the video control panel
-        video_control_panel = widgets.VBox([video_dropdown, video_opacity_slider])
-        video_control = ipyleaflet.WidgetControl(widget=video_control_panel, position="topright")
 
         # Widgets for COG
         cog_dropdown = widgets.Dropdown(
@@ -158,15 +117,15 @@ class Map(ipyleaflet.Map):
             description="Position:",
         )
 
-        # Dictionary to keep track of overlays
-        current_overlay = {"image": None, "video": None, "cog": None, "geojson": None}
-
-        # Create the title widget and control
+        # Initialize the title widget
         title_widget = widgets.HTML(
             value=f"<div style='color:{font_color}; font-size:{font_size}; text-align:center; background-color: transparent;'>{title}</div>"
         )
-        self.title_control = ipyleaflet.WidgetControl(widget=title_widget, position=position)  # Use self.title_control
+        self.title_control = ipyleaflet.WidgetControl(widget=title_widget, position=position)
         self.add_control(self.title_control)
+
+        # Dictionary to keep track of overlays
+        current_overlay = {"image": None, "video": None, "cog": None, "geojson": None}
 
         # Functions for updating the map
         def update_image(change):
@@ -221,17 +180,14 @@ class Map(ipyleaflet.Map):
             geojson_url = geojson_dropdown.value
             if geojson_url:
                 try:
-                    import requests
                     response = requests.get(geojson_url)
-                    response.raise_for_status()  # Ensure the request was successful
-                    geojson_data = response.json()
-                    geojson_layer = GeoJSON(data=geojson_data)
+                    response.raise_for_status()
+                    geojson_layer = GeoJSON(data=response.json())
                     self.add(geojson_layer)
                     current_overlay["geojson"] = geojson_layer
 
                     # Zoom to the bounds of the GeoJSON layer
-                    bounds = geojson_layer.bounds
-                    self.fit_bounds(bounds)
+                    self.fit_bounds(geojson_layer.bounds)
                 except Exception as e:
                     print(f"Error loading GeoJSON: {e}")
 
@@ -240,12 +196,31 @@ class Map(ipyleaflet.Map):
                 f"<div style='color:{font_color_picker.value}; font-size:{font_size_slider.value}px; text-align:center;'>"
                 f"{title_input.value}</div>"
             )
-            # Check if the control exists on the map before removing it
             if self.title_control in self.controls:
                 self.remove_control(self.title_control)
-            # Create a new control with the updated title and position
             self.title_control = ipyleaflet.WidgetControl(widget=title_widget, position=position_dropdown.value)
             self.add_control(self.title_control)
+
+        def update_video(change):
+            """
+            Updates the video overlay on the map based on the selected video and opacity.
+
+            Args:
+                change: The change event triggered by the dropdown or slider.
+
+            Returns:
+                None
+            """
+            if current_overlay["video"]:
+                self.remove(current_overlay["video"])
+                current_overlay["video"] = None
+
+            selected_video = video_dropdown.value
+            if selected_video != "Select a video":
+                video_url = video_options[selected_video]
+                overlay = ipyleaflet.VideoOverlay(url=video_url, bounds=video_bounds, opacity=video_opacity_slider.value)
+                self.add(overlay)
+                current_overlay["video"] = overlay
 
         # Observe changes in widgets
         image_dropdown.observe(update_image, names="value")
@@ -253,8 +228,6 @@ class Map(ipyleaflet.Map):
         lon_min_slider.observe(update_image_bounds, names="value")
         lat_max_slider.observe(update_image_bounds, names="value")
         lon_max_slider.observe(update_image_bounds, names="value")
-        video_dropdown.observe(add_video_overlay, names="value")
-        video_opacity_slider.observe(add_video_overlay, names="value")
         cog_dropdown.observe(add_cog_layer, names="value")
         cog_opacity_slider.observe(add_cog_layer, names="value")
         geojson_dropdown.observe(update_geojson, names="value")
@@ -262,6 +235,8 @@ class Map(ipyleaflet.Map):
         font_size_slider.observe(update_title, names="value")
         font_color_picker.observe(update_title, names="value")
         position_dropdown.observe(update_title, names="value")
+        video_dropdown.observe(update_video, names="value")
+        video_opacity_slider.observe(update_video, names="value")
 
         # Create control panels
         image_control_panel = widgets.VBox([image_dropdown, image_sliders])
@@ -270,76 +245,93 @@ class Map(ipyleaflet.Map):
         geojson_control_panel = widgets.VBox([geojson_dropdown])
         title_control_panel = widgets.VBox([title_input, font_size_slider, font_color_picker, position_dropdown])
 
-        # Create WidgetControl objects once
+        # Create WidgetControl objects
         image_control = ipyleaflet.WidgetControl(widget=image_control_panel, position="topright")
         video_control = ipyleaflet.WidgetControl(widget=video_control_panel, position="topright")
         cog_control = ipyleaflet.WidgetControl(widget=cog_control_panel, position="topright")
         geojson_control = ipyleaflet.WidgetControl(widget=geojson_control_panel, position="topright")
         title_control_panel_control = ipyleaflet.WidgetControl(widget=title_control_panel, position="topright")
 
-        # Toggle menu with Font Awesome icons
+        # Toggle menu
         toggle_menu = widgets.ToggleButtons(
-            options=[
-                ("None"),
-                ("Image"),
-                ("Video"),
-                ("COG"),
-                ("Title"),
-                ("Json"),
-            ],
+            options=["None", "Title", "Image", "Video", "COG", "JSON"],
             value=None,
             description="",
-            style={"button_width": "100px", "color": "black"},
+            style={"button_width": "65px"},
         )
 
-        # Function to toggle controls
         def toggle_controls(change):
-            # Remove all control panels
             for control in [image_control, video_control, cog_control, title_control_panel_control, geojson_control]:
                 if control in self.controls:
                     self.remove_control(control)
-            # Add the selected control panel
-            if change["new"] == "Image":
+            if change["new"] == "Title":
+                self.add_control(title_control_panel_control)
+            elif change["new"] == "Image":
                 self.add_control(image_control)
             elif change["new"] == "Video":
                 self.add_control(video_control)
             elif change["new"] == "COG":
                 self.add_control(cog_control)
-            elif change["new"] == "Title":
-                self.add_control(title_control_panel_control)
-            elif change["new"] == "Json":
+            
+            elif change["new"] == "JSON":  # Updated from "GeoJSON" to "JSON"
                 self.add_control(geojson_control)
 
         toggle_menu.observe(toggle_controls, names="value")
 
-        # Create a toggle button for collapsing/expanding the menu
+        # Collapsible menu button
         collapse_button = widgets.Button(
             description="",
-            button_style="primary",  # 'success', 'info', 'warning', 'danger' or ''
+            button_style="warning",
             tooltip="Click to hide/show the menu",
-            icon="eye-slash",  # Font Awesome icon
-            layout=widgets.Layout(width="50px", height="30px"),  # Adjust the size here
+            icon="eye-slash",
+            layout=widgets.Layout(width="40px", height="40px"),
         )
 
-        # Function to toggle the visibility of the menu
         def toggle_menu_visibility(b):
             if toggle_menu.layout.display == "none":
-                # Show the menu
                 toggle_menu.layout.display = "flex"
-                collapse_button.description = ""
                 collapse_button.icon = "eye-slash"
             else:
-                # Hide the menu
                 toggle_menu.layout.display = "none"
-                collapse_button.description = ""
                 collapse_button.icon = "eye"
 
-        # Attach the toggle function to the button
         collapse_button.on_click(toggle_menu_visibility)
 
-        # Add the toggle button to the map
-        collapse_button_control = ipyleaflet.WidgetControl(widget=collapse_button, position="topright")
-        self.add_control(collapse_button_control)
-
-        # Add the toggle menu to the map
+        # Add controls to the map
+        self.add_control(ipyleaflet.WidgetControl(widget=collapse_button, position="topright"))
         self.add_control(ipyleaflet.WidgetControl(widget=toggle_menu, position="topright"))
+
+    def save_map(self):
+        """
+        Adds a button to save the current map extent as a downloaded image.
+        """
+        save_button = widgets.Button(
+            description="Save Map",
+            button_style="success",
+            tooltip="Save the current map as an image",
+            icon="download",
+            layout=widgets.Layout(width="100px", height="30px"),
+        )
+
+        def save_map_as_image(b):
+            print("Saving map as an image is not yet implemented.")
+
+        save_button.on_click(save_map_as_image)
+        self.add_control(ipyleaflet.WidgetControl(widget=save_button, position="bottomright"))
+
+    def add_video(self, video, bounds=None, **kwargs):
+        """
+        Adds a video overlay to the map.
+
+        Args:
+            video (str): The file path or URL to the video.
+            bounds (list, optional): The geographical bounds for the video overlay. Defaults to the entire world.
+            **kwargs: Additional keyword arguments for the ipyleaflet.VideoOverlay layer.
+
+        Returns:
+            None
+        """
+        if bounds is None:
+            bounds = [[-90, -180], [90, 180]]  # Default bounds for the video
+        overlay = ipyleaflet.VideoOverlay(url=video, bounds=bounds, **kwargs)
+        self.add(overlay)
