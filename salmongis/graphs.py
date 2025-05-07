@@ -1,6 +1,7 @@
 import ipyleaflet
 import geopandas as gpd
 from ipyleaflet import GeoJSON
+import leafmap
 import ipywidgets as widgets
 import base64
 from pathlib import Path
@@ -24,9 +25,9 @@ class Map(ipyleaflet.Map):
         self.layout.height = height
     
 
-    def add_combined_ui(self, options=None, video_options=None, video_bounds=None, cog_options=None, title="Map Title", position="topleft", font_size="16px", font_color="black"):
+    def add_combined_ui(self, options=None, video_options=None, video_bounds=None, cog_options=None, geojson_options=None, title="Map Title", position="topleft", font_size="16px", font_color="black"):
         """
-        Combines all functionalities (image GUI, video overlay, title, and COG) into one unified UI with a menu.
+        Combines all functionalities (image GUI, video overlay, title, COG, and GeoJSON) into one unified UI with a menu.
 
         Args:
             options (dict, optional): A dictionary for image options where keys are image names (strings)
@@ -36,6 +37,8 @@ class Map(ipyleaflet.Map):
             video_bounds (list, optional): The geographical bounds for the video overlay as [[lat_min, lon_min], [lat_max, lon_max]].
             cog_options (dict, optional): A dictionary for COG options where keys are COG names (strings)
                 and values are URLs to the COG files.
+            geojson_options (dict, optional): A dictionary for GeoJSON options where keys are GeoJSON names (strings)
+                and values are URLs to the GeoJSON files.
             title (str, optional): The initial text of the title to be displayed on the map. Defaults to "Map Title".
             position (str, optional): The initial position of the title on the map. Defaults to "topleft".
             font_size (str, optional): The initial font size of the title. Defaults to "16px".
@@ -70,6 +73,13 @@ class Map(ipyleaflet.Map):
                 "Select a COG": None,
                 "COG 1": "https://example.com/cog1.tif",
                 "COG 2": "https://example.com/cog2.tif",
+            }
+
+        if geojson_options is None:
+            geojson_options = {
+                "Select a GeoJSON": None,
+                "World Countries": "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json",
+                "World Cities": "https://github.com/opengeos/datasets/releases/download/world/world_cities.geojson",
             }
 
         # Widgets for image GUI
@@ -130,6 +140,14 @@ class Map(ipyleaflet.Map):
         )
         cog_opacity_slider = widgets.FloatSlider(value=0.8, min=0, max=1, step=0.1, description="Opacity:")
 
+        # Widgets for GeoJSON
+        geojson_dropdown = widgets.Dropdown(
+            options=geojson_options,
+            value=None,
+            description="GeoJSON:",
+            layout=widgets.Layout(width="400px"),
+        )
+
         # Widgets for title
         title_input = widgets.Text(value=title, description="Title:")
         font_size_slider = widgets.IntSlider(value=int(font_size[:-2]), min=10, max=50, step=1, description="Font Size:")
@@ -141,7 +159,7 @@ class Map(ipyleaflet.Map):
         )
 
         # Dictionary to keep track of overlays
-        current_overlay = {"image": None, "video": None, "cog": None}
+        current_overlay = {"image": None, "video": None, "cog": None, "geojson": None}
 
         # Create the title widget and control
         title_widget = widgets.HTML(
@@ -193,6 +211,30 @@ class Map(ipyleaflet.Map):
                 except Exception as e:
                     print(f"Error adding COG layer: {e}")
 
+        def update_geojson(change):
+            # Remove the current GeoJSON layer if it exists
+            if current_overlay["geojson"]:
+                self.remove(current_overlay["geojson"])
+                current_overlay["geojson"] = None
+
+            # Add the new GeoJSON layer
+            geojson_url = geojson_dropdown.value
+            if geojson_url:
+                try:
+                    import requests
+                    response = requests.get(geojson_url)
+                    response.raise_for_status()  # Ensure the request was successful
+                    geojson_data = response.json()
+                    geojson_layer = GeoJSON(data=geojson_data)
+                    self.add(geojson_layer)
+                    current_overlay["geojson"] = geojson_layer
+
+                    # Zoom to the bounds of the GeoJSON layer
+                    bounds = geojson_layer.bounds
+                    self.fit_bounds(bounds)
+                except Exception as e:
+                    print(f"Error loading GeoJSON: {e}")
+
         def update_title(change):
             title_widget.value = (
                 f"<div style='color:{font_color_picker.value}; font-size:{font_size_slider.value}px; text-align:center;'>"
@@ -215,6 +257,7 @@ class Map(ipyleaflet.Map):
         video_opacity_slider.observe(add_video_overlay, names="value")
         cog_dropdown.observe(add_cog_layer, names="value")
         cog_opacity_slider.observe(add_cog_layer, names="value")
+        geojson_dropdown.observe(update_geojson, names="value")
         title_input.observe(update_title, names="value")
         font_size_slider.observe(update_title, names="value")
         font_color_picker.observe(update_title, names="value")
@@ -224,12 +267,14 @@ class Map(ipyleaflet.Map):
         image_control_panel = widgets.VBox([image_dropdown, image_sliders])
         video_control_panel = widgets.VBox([video_dropdown, video_opacity_slider])
         cog_control_panel = widgets.VBox([cog_dropdown, cog_opacity_slider])
+        geojson_control_panel = widgets.VBox([geojson_dropdown])
         title_control_panel = widgets.VBox([title_input, font_size_slider, font_color_picker, position_dropdown])
 
         # Create WidgetControl objects once
         image_control = ipyleaflet.WidgetControl(widget=image_control_panel, position="topright")
         video_control = ipyleaflet.WidgetControl(widget=video_control_panel, position="topright")
         cog_control = ipyleaflet.WidgetControl(widget=cog_control_panel, position="topright")
+        geojson_control = ipyleaflet.WidgetControl(widget=geojson_control_panel, position="topright")
         title_control_panel_control = ipyleaflet.WidgetControl(widget=title_control_panel, position="topright")
 
         # Toggle menu with Font Awesome icons
@@ -240,16 +285,17 @@ class Map(ipyleaflet.Map):
                 ("Video"),
                 ("COG"),
                 ("Title"),
+                ("Json"),
             ],
             value=None,
             description="",
-            style={"button_width": "75px"},
+            style={"button_width": "100px", "color": "black"},
         )
 
         # Function to toggle controls
         def toggle_controls(change):
             # Remove all control panels
-            for control in [image_control, video_control, cog_control, title_control_panel_control]:
+            for control in [image_control, video_control, cog_control, title_control_panel_control, geojson_control]:
                 if control in self.controls:
                     self.remove_control(control)
             # Add the selected control panel
@@ -261,8 +307,39 @@ class Map(ipyleaflet.Map):
                 self.add_control(cog_control)
             elif change["new"] == "Title":
                 self.add_control(title_control_panel_control)
+            elif change["new"] == "Json":
+                self.add_control(geojson_control)
 
         toggle_menu.observe(toggle_controls, names="value")
+
+        # Create a toggle button for collapsing/expanding the menu
+        collapse_button = widgets.Button(
+            description="",
+            button_style="primary",  # 'success', 'info', 'warning', 'danger' or ''
+            tooltip="Click to hide/show the menu",
+            icon="eye-slash",  # Font Awesome icon
+            layout=widgets.Layout(width="50px", height="30px"),  # Adjust the size here
+        )
+
+        # Function to toggle the visibility of the menu
+        def toggle_menu_visibility(b):
+            if toggle_menu.layout.display == "none":
+                # Show the menu
+                toggle_menu.layout.display = "flex"
+                collapse_button.description = ""
+                collapse_button.icon = "eye-slash"
+            else:
+                # Hide the menu
+                toggle_menu.layout.display = "none"
+                collapse_button.description = ""
+                collapse_button.icon = "eye"
+
+        # Attach the toggle function to the button
+        collapse_button.on_click(toggle_menu_visibility)
+
+        # Add the toggle button to the map
+        collapse_button_control = ipyleaflet.WidgetControl(widget=collapse_button, position="topright")
+        self.add_control(collapse_button_control)
 
         # Add the toggle menu to the map
         self.add_control(ipyleaflet.WidgetControl(widget=toggle_menu, position="topright"))
