@@ -6,3 +6,5 @@ localtileserver
 matplotlib
 numpy
 ipywidgets
+xarray
+pandas
