@@ -29,7 +29,7 @@ class Map(ipyleaflet.Map):
 
     def add_combined_ui(self, options=None, video_options=None, video_bounds=None, cog_options=None, geojson_options=None, title="Map Title", position="topleft", font_size="16px", font_color="black"):
         """
-        Combines all functionalities (image GUI, video overlay, title, COG, and GeoJSON) into one unified UI with a menu.
+        Combines all functionalities (image GUI, video overlay, title, COG, GeoJSON, and basemap selector) into one unified UI with a menu.
 
         Args:
             options (dict, optional): A dictionary for image options where keys are image names (strings)
@@ -252,16 +252,61 @@ class Map(ipyleaflet.Map):
         geojson_control = ipyleaflet.WidgetControl(widget=geojson_control_panel, position="topright")
         title_control_panel_control = ipyleaflet.WidgetControl(widget=title_control_panel, position="topright")
 
+        # Default basemaps
+        basemaps = [
+            "OpenStreetMap.Mapnik",
+            "OpenTopoMap",
+            "CartoDB.Positron",
+            "CartoDB.DarkMatter",
+        ]
+
+        # Dropdown widget for selecting a basemap
+        basemap_dropdown = widgets.Dropdown(
+            options=basemaps,
+            value="OpenStreetMap.Mapnik",
+            description="Basemap:",
+            layout=widgets.Layout(width="225px"),
+        )
+
+        # Button to apply the selected basemap
+        apply_button = widgets.Button(
+            description="Apply",
+            button_style="success",
+            tooltip="Apply the selected basemap",
+            icon="map",
+            layout=widgets.Layout(width="75px"),
+        )
+
+        # Function to update the basemap
+        def update_basemap(b):
+            # Remove all existing tile layers
+            for layer in self.layers:
+                if isinstance(layer, ipyleaflet.TileLayer):
+                    self.remove_layer(layer)
+
+            # Add the selected basemap
+            basemap_name = basemap_dropdown.value
+            basemap = eval(f"ipyleaflet.basemaps.{basemap_name}")
+            tile_layer = ipyleaflet.TileLayer(url=basemap.build_url(), name=basemap_name)
+            self.add_layer(tile_layer)
+
+        # Attach the update function to the button
+        apply_button.on_click(update_basemap)
+
+        # Create a control panel for the basemap selector
+        basemap_control_panel = widgets.VBox([basemap_dropdown, apply_button])
+        basemap_control = ipyleaflet.WidgetControl(widget=basemap_control_panel, position="topright")  # Define basemap_control here
+
         # Toggle menu
         toggle_menu = widgets.ToggleButtons(
-            options=["None", "Title", "Image", "Video", "COG", "JSON"],
+            options=["None", "Title", "Image", "Video", "COG", "JSON", "Basemap"],  # Added "Basemap" option
             value=None,
             description="",
-            style={"button_width": "65px"},
+            style={"button_width": "80px"},
         )
 
         def toggle_controls(change):
-            for control in [image_control, video_control, cog_control, title_control_panel_control, geojson_control]:
+            for control in [image_control, video_control, cog_control, title_control_panel_control, geojson_control, basemap_control]:
                 if control in self.controls:
                     self.remove_control(control)
             if change["new"] == "Title":
@@ -272,9 +317,10 @@ class Map(ipyleaflet.Map):
                 self.add_control(video_control)
             elif change["new"] == "COG":
                 self.add_control(cog_control)
-            
-            elif change["new"] == "JSON":  # Updated from "GeoJSON" to "JSON"
+            elif change["new"] == "JSON":
                 self.add_control(geojson_control)
+            elif change["new"] == "Basemap":  # Added logic for "Basemap"
+                self.add_control(basemap_control)
 
         toggle_menu.observe(toggle_controls, names="value")
 
@@ -288,12 +334,28 @@ class Map(ipyleaflet.Map):
         )
 
         def toggle_menu_visibility(b):
+            """
+            Toggles the visibility of the toggle menu and removes all controls when collapsed.
+
+            Args:
+                b: The button click event.
+
+            Returns:
+                None
+            """
             if toggle_menu.layout.display == "none":
+                # Show the toggle menu
                 toggle_menu.layout.display = "flex"
                 collapse_button.icon = "eye-slash"
             else:
+                # Hide the toggle menu and remove all controls
                 toggle_menu.layout.display = "none"
                 collapse_button.icon = "eye"
+
+                # Remove all active controls
+                for control in [image_control, video_control, cog_control, title_control_panel_control, geojson_control, basemap_control]:
+                    if control in self.controls:
+                        self.remove_control(control)
 
         collapse_button.on_click(toggle_menu_visibility)
 
@@ -317,7 +379,7 @@ class Map(ipyleaflet.Map):
             print("Saving map as an image is not yet implemented.")
 
         save_button.on_click(save_map_as_image)
-        self.add_control(ipyleaflet.WidgetControl(widget=save_button, position="bottomright"))
+        self.add_control(ipyleaflet.WidgetControl(widget=save_button, position="bottomleft"))
 
     def add_video(self, video, bounds=None, **kwargs):
         """
@@ -335,3 +397,4 @@ class Map(ipyleaflet.Map):
             bounds = [[-90, -180], [90, 180]]  # Default bounds for the video
         overlay = ipyleaflet.VideoOverlay(url=video, bounds=bounds, **kwargs)
         self.add(overlay)
+
