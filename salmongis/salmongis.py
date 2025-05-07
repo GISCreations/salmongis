@@ -109,7 +109,7 @@ class Map(ipyleaflet.Map):
         **kwargs: Additional keyword arguments for the ipyleaflet. ImageOverlay layer.
         """
         if bounds is None: 
-            bounds = [[-90, -180] [90,1801]]
+            bounds = [[-90, -180], [90, 180]]
         overlay = ipyleaflet.ImageOverlay(url=image, bounds=bounds, **kwargs)
         self.add(overlay)
 
