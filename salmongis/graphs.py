@@ -203,6 +203,10 @@ class Map(ipyleaflet.Map):
             description="Position:",
         )
 
+        # Title control panel
+        title_control_panel = widgets.VBox([title_input, font_size_slider, font_color_picker, position_dropdown])
+        title_control_panel_control = ipyleaflet.WidgetControl(widget=title_control_panel, position="bottomright")
+
         # Initialize the title widget
         title_widget = widgets.HTML(
             value=f"<div style='color:{font_color}; font-size:{font_size}; text-align:center; background-color: transparent;'>{title}</div>"
@@ -210,8 +214,14 @@ class Map(ipyleaflet.Map):
         self.title_control = ipyleaflet.WidgetControl(widget=title_widget, position=position)
         self.add_control(self.title_control)
 
+        # Observe changes in title widgets
+        title_input.observe(update_title, names="value")
+        font_size_slider.observe(update_title, names="value")
+        font_color_picker.observe(update_title, names="value")
+        position_dropdown.observe(update_title, names="value")
+
         # Dictionary to keep track of overlays
-        current_overlay = {"image": None, "video": None, "cog": None, "geojson": None}
+        current_overlay = {"image": None, "cog": None, "geojson": None}
 
         # Functions for updating the map
         def update_image(change):
@@ -303,6 +313,15 @@ class Map(ipyleaflet.Map):
         cog_opacity_slider.observe(add_cog_layer, names="value")
 
         def update_geojson(change):
+            """
+            Updates the GeoJSON layer on the map based on the selected file.
+
+            Args:
+                change: The change event triggered by the FileChooser.
+
+            Returns:
+                None
+            """
             # Remove the current GeoJSON layer if it exists
             if current_overlay["geojson"]:
                 self.remove(current_overlay["geojson"])
@@ -312,9 +331,9 @@ class Map(ipyleaflet.Map):
             geojson_url = geojson_chooser.selected
             if geojson_url:
                 try:
-                    response = requests.get(geojson_url)
-                    response.raise_for_status()
-                    geojson_layer = GeoJSON(data=response.json())
+                    with open(geojson_file, "r") as f:
+                        geojson_data = f.read()
+                    geojson_layer = GeoJSON(data=json.loads(geojson_data))
                     self.add(geojson_layer)
                     current_overlay["geojson"] = geojson_layer
 
@@ -353,13 +372,14 @@ class Map(ipyleaflet.Map):
         cog_control_panel = widgets.VBox([cog_chooser, cog_opacity_slider])
         geojson_control_panel = widgets.VBox([geojson_chooser])  # Use geojson_chooser here
         title_control_panel = widgets.VBox([title_input, font_size_slider, font_color_picker, position_dropdown])
+        geoparquet_control_panel = widgets.VBox([geoparquet_chooser])
 
         # Create WidgetControl objects
         image_control = ipyleaflet.WidgetControl(widget=image_control_panel, position="topright")
-        video_control = ipyleaflet.WidgetControl(widget=video_control_panel, position="topright")
         cog_control = ipyleaflet.WidgetControl(widget=cog_control_panel, position="topright")
         geojson_control = ipyleaflet.WidgetControl(widget=geojson_control_panel, position="topright")
-        title_control_panel_control = ipyleaflet.WidgetControl(widget=title_control_panel, position="topright")
+        title_control_panel_control = ipyleaflet.WidgetControl(widget=title_control_panel, position="bottomright")
+        geoparquet_control = ipyleaflet.WidgetControl(widget=geoparquet_control_panel, position="topright")
 
         # Default basemaps
         basemaps = [
@@ -418,18 +438,44 @@ class Map(ipyleaflet.Map):
             for control in [image_control, cog_control, title_control_panel_control, geojson_control, basemap_control]:
                 if control in self.controls:
                     self.remove_control(control)
-            if change["new"] == "Title":
+
+            # Add the corresponding control based on the button pressed
+            if change["owner"].description == "Title" and change["new"]:
                 self.add_control(title_control_panel_control)
-            elif change["new"] == "Image":
+            elif change["owner"].description == "Image" and change["new"]:
                 self.add_control(image_control)
             elif change["new"] == "COG":
                 self.add_control(cog_control)
-            elif change["new"] == "JSON":
+            elif change["owner"].description == "JSON" and change["new"]:
                 self.add_control(geojson_control)
             elif change["new"] == "Basemap":
                 self.add_control(basemap_control)
+            elif change["owner"].description == "GeoParquet" and change["new"]:  # Handle GeoParquet
+                self.add_control(geoparquet_control)
 
         toggle_menu.observe(toggle_controls, names="value")
+
+        # Create a vertical container for the toggle menu buttons
+        vertical_menu = widgets.VBox(
+            [
+                widgets.ToggleButton(description="Title", value=False, tooltip="Title Control"),
+                widgets.ToggleButton(description="Image", value=False, tooltip="Image Control"),
+                widgets.ToggleButton(description="COG", value=False, tooltip="COG Control"),
+                widgets.ToggleButton(description="JSON", value=False, tooltip="GeoJSON Control"),
+                widgets.ToggleButton(description="Basemap", value=False, tooltip="Basemap Control"),
+                widgets.ToggleButton(description="GeoParquet", value=False, tooltip="GeoParquet Control"),  # Added GeoParquet button
+            ],
+            layout=widgets.Layout(
+                display="flex",
+                flex_flow="column",
+                align_items="stretch",
+                width="150px",  # Adjust width as needed
+            ),
+        )
+
+        # Attach the toggle_controls function to each button in the vertical menu
+        for button in vertical_menu.children:
+            button.observe(toggle_controls, names="value")
 
         # Collapsible menu button
         collapse_button = widgets.Button(
@@ -442,7 +488,7 @@ class Map(ipyleaflet.Map):
 
         def toggle_menu_visibility(b):
             """
-            Toggles the visibility of the toggle menu and removes all controls when collapsed.
+            Toggles the visibility of the vertical menu and removes all controls when collapsed.
 
             Args:
                 b: The button click event.
@@ -450,13 +496,13 @@ class Map(ipyleaflet.Map):
             Returns:
                 None
             """
-            if toggle_menu.layout.display == "none":
-                # Show the toggle menu
-                toggle_menu.layout.display = "flex"
+            if vertical_menu.layout.display == "none":
+                # Show the vertical menu
+                vertical_menu.layout.display = "flex"
                 collapse_button.icon = "eye-slash"
             else:
-                # Hide the toggle menu and remove all controls
-                toggle_menu.layout.display = "none"
+                # Hide the vertical menu and remove all controls
+                vertical_menu.layout.display = "none"
                 collapse_button.icon = "eye"
 
                 # Remove all active controls
@@ -466,9 +512,9 @@ class Map(ipyleaflet.Map):
 
         collapse_button.on_click(toggle_menu_visibility)
 
-        # Add controls to the map
+        # Add the vertical menu and collapse button to the map
         self.add_control(ipyleaflet.WidgetControl(widget=collapse_button, position="topright"))
-        self.add_control(ipyleaflet.WidgetControl(widget=toggle_menu, position="topright"))
+        self.add_control(ipyleaflet.WidgetControl(widget=vertical_menu, position="topright"))
 
     def save_map(self):
         """
