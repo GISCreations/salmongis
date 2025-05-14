@@ -17,3 +17,20 @@
 -   Dynamic file manipulation within ipyleaflet maps
 -   Ability to add images, COGS, and GEOJSON files directly into maps
 -   Change map title without hard coding!
+-   
+
+## Requirements:
+- folium
+- geopandas
+- ipyleaflet
+- leafmap
+- localtileserver
+- matplotlib
+- numpy
+- ipywidgets
+- xarray
+- pandas
+- netcdf4
+- h5netcdf
+- scipy
+- ipyfilechooser
