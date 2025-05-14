@@ -10,6 +10,7 @@ from localtileserver import TileClient, get_leaflet_tile_layer
 import ipyfilechooser as filechooser
 import time
 import requests
+import json
 
 
 class Map(ipyleaflet.Map):
@@ -83,30 +84,44 @@ class Map(ipyleaflet.Map):
         lon_max_slider = widgets.FloatSlider(value=0, min=-180, max=180, step=0.1, description="Lon Max:")
         image_sliders = widgets.VBox([lat_min_slider, lon_min_slider, lat_max_slider, lon_max_slider])
 
-        # Widgets for video overlay
-        video_dropdown = widgets.Dropdown(
-            options=["Select a video"] + list(video_options.keys()),
-            value="Select a video",
-            description="Video:",
-        )
-        video_opacity_slider = widgets.FloatSlider(value=0.7, min=0, max=1, step=0.1, description="Opacity:")
-
         # Widgets for COG
-        cog_dropdown = widgets.Dropdown(
-            options=cog_options,
-            value=None,
-            description="COG:",
-            layout=widgets.Layout(width="400px"),
-        )
+        cog_chooser = filechooser.FileChooser()
+        cog_chooser.title = "Select a COG file"
+        cog_chooser.filter_pattern = ["*.tif", "*.tiff"]  # Restrict file types
+        cog_chooser.use_dir_icons = True
         cog_opacity_slider = widgets.FloatSlider(value=0.8, min=0, max=1, step=0.1, description="Opacity:")
 
         # Widgets for GeoJSON
-        geojson_dropdown = widgets.Dropdown(
-            options=geojson_options,
-            value=None,
-            description="GeoJSON:",
-            layout=widgets.Layout(width="400px"),
-        )
+        geojson_chooser = filechooser.FileChooser()
+        geojson_chooser.title = "Select a GeoJSON file"
+        geojson_chooser.filter_pattern = ["*.geojson", "*.json"]  # Restrict file types
+        geojson_chooser.use_dir_icons = True
+
+        # Widgets for GeoParquet
+        geoparquet_chooser = filechooser.FileChooser()
+        geoparquet_chooser.title = "Select a GeoParquet file"
+        geoparquet_chooser.filter_pattern = ["*.parquet"]  # Restrict file types
+        geoparquet_chooser.use_dir_icons = True
+
+        # Define the update_title function before it is used
+        def update_title(change=None):
+            """
+            Updates the title widget on the map based on user input.
+
+            Args:
+                change: The change event triggered by widgets (optional).
+
+            Returns:
+                None
+            """
+            title_widget.value = (
+                f"<div style='color:{font_color_picker.value}; font-size:{font_size_slider.value}px; text-align:center;'>"
+                f"{title_input.value}</div>"
+            )
+            if self.title_control in self.controls:
+                self.remove_control(self.title_control)
+            self.title_control = ipyleaflet.WidgetControl(widget=title_widget, position=position_dropdown.value)
+            self.add_control(self.title_control)
 
         # Widgets for title
         title_input = widgets.Text(value=title, description="Title:")
@@ -118,6 +133,10 @@ class Map(ipyleaflet.Map):
             description="Position:",
         )
 
+        # Title control panel
+        title_control_panel = widgets.VBox([title_input, font_size_slider, font_color_picker, position_dropdown])
+        title_control_panel_control = ipyleaflet.WidgetControl(widget=title_control_panel, position="bottomright")
+
         # Initialize the title widget
         title_widget = widgets.HTML(
             value=f"<div style='color:{font_color}; font-size:{font_size}; text-align:center; background-color: transparent;'>{title}</div>"
@@ -125,8 +144,14 @@ class Map(ipyleaflet.Map):
         self.title_control = ipyleaflet.WidgetControl(widget=title_widget, position=position)
         self.add_control(self.title_control)
 
+        # Observe changes in title widgets
+        title_input.observe(update_title, names="value")
+        font_size_slider.observe(update_title, names="value")
+        font_color_picker.observe(update_title, names="value")
+        position_dropdown.observe(update_title, names="value")
+
         # Dictionary to keep track of overlays
-        current_overlay = {"image": None, "video": None, "cog": None, "geojson": None}
+        current_overlay = {"image": None, "cog": None, "geojson": None}
 
         # Functions for updating the map
         def update_image(change):
@@ -143,7 +168,11 @@ class Map(ipyleaflet.Map):
                     [lat_min_slider.value, lon_min_slider.value],
                     [lat_max_slider.value, lon_max_slider.value],
                 ]
-                overlay = ipyleaflet.ImageOverlay(url=selected_file, bounds=bounds)
+                overlay = ipyleaflet.ImageOverlay(
+                    url=selected_file,
+                    bounds=bounds,
+                    opacity=image_opacity_slider.value,  # Apply opacity
+                )
                 self.add(overlay)
                 current_overlay["image"] = overlay
 
@@ -158,15 +187,25 @@ class Map(ipyleaflet.Map):
                 ]
                 current_overlay["image"].bounds = new_bounds
 
+        # Function to add the COG layer
         def add_cog_layer(change):
+            """
+            Adds a COG layer to the map based on the selected file.
+
+            Args:
+                change: The change event triggered by the FileChooser or slider.
+
+            Returns:
+                None
+            """
             if current_overlay["cog"]:
                 self.remove(current_overlay["cog"])
                 current_overlay["cog"] = None
 
-            cog_url = cog_dropdown.value
-            if cog_url:
+            cog_file = cog_chooser.selected
+            if cog_file:
                 try:
-                    client = TileClient(cog_url)
+                    client = TileClient(cog_file)
                     cog_layer = get_leaflet_tile_layer(client, opacity=cog_opacity_slider.value)
                     self.add(cog_layer)
                     current_overlay["cog"] = cog_layer
@@ -176,19 +215,28 @@ class Map(ipyleaflet.Map):
                 except Exception as e:
                     print(f"Error adding COG layer: {e}")
 
+        # Function to update the GeoJSON layer
         def update_geojson(change):
+            """
+            Updates the GeoJSON layer on the map based on the selected file.
+
+            Args:
+                change: The change event triggered by the FileChooser.
+
+            Returns:
+                None
+            """
             # Remove the current GeoJSON layer if it exists
             if current_overlay["geojson"]:
                 self.remove(current_overlay["geojson"])
                 current_overlay["geojson"] = None
 
-            # Add the new GeoJSON layer
-            geojson_url = geojson_dropdown.value
-            if geojson_url:
+            geojson_file = geojson_chooser.selected
+            if geojson_file:
                 try:
-                    response = requests.get(geojson_url)
-                    response.raise_for_status()
-                    geojson_layer = GeoJSON(data=response.json())
+                    with open(geojson_file, "r") as f:
+                        geojson_data = f.read()
+                    geojson_layer = GeoJSON(data=json.loads(geojson_data))
                     self.add(geojson_layer)
                     current_overlay["geojson"] = geojson_layer
 
@@ -197,66 +245,57 @@ class Map(ipyleaflet.Map):
                 except Exception as e:
                     print(f"Error loading GeoJSON: {e}")
 
-        def update_title(change):
-            title_widget.value = (
-                f"<div style='color:{font_color_picker.value}; font-size:{font_size_slider.value}px; text-align:center;'>"
-                f"{title_input.value}</div>"
-            )
-            if self.title_control in self.controls:
-                self.remove_control(self.title_control)
-            self.title_control = ipyleaflet.WidgetControl(widget=title_widget, position=position_dropdown.value)
-            self.add_control(self.title_control)
-
-        def update_video(change):
+        # Function to add the GeoParquet layer
+        def add_geoparquet_layer(change):
             """
-            Updates the video overlay on the map based on the selected video and opacity.
+            Adds a GeoParquet layer to the map based on the selected file.
 
             Args:
-                change: The change event triggered by the dropdown or slider.
+                change: The change event triggered by the FileChooser.
 
             Returns:
                 None
             """
-            if current_overlay["video"]:
-                self.remove(current_overlay["video"])
-                current_overlay["video"] = None
+            geoparquet_file = geoparquet_chooser.selected
+            if geoparquet_file:
+                try:
+                    import geopandas as gpd
+                    from shapely.geometry import mapping
 
-            selected_video = video_dropdown.value
-            if selected_video != "Select a video":
-                video_url = video_options[selected_video]
-                overlay = ipyleaflet.VideoOverlay(url=video_url, bounds=video_bounds, opacity=video_opacity_slider.value)
-                self.add(overlay)
-                current_overlay["video"] = overlay
+                    # Load the GeoParquet file
+                    gdf = gpd.read_parquet(geoparquet_file)
 
-        # Observe changes in widgets
-        image_chooser.observe(update_image, names="value")
-        lat_min_slider.observe(update_image_bounds, names="value")
-        lon_min_slider.observe(update_image_bounds, names="value")
-        lat_max_slider.observe(update_image_bounds, names="value")
-        lon_max_slider.observe(update_image_bounds, names="value")
-        cog_dropdown.observe(add_cog_layer, names="value")
-        cog_opacity_slider.observe(add_cog_layer, names="value")
-        geojson_dropdown.observe(update_geojson, names="value")
-        title_input.observe(update_title, names="value")
-        font_size_slider.observe(update_title, names="value")
-        font_color_picker.observe(update_title, names="value")
-        position_dropdown.observe(update_title, names="value")
-        video_dropdown.observe(update_video, names="value")
-        video_opacity_slider.observe(update_video, names="value")
+                    # Convert GeoDataFrame to GeoJSON
+                    geojson_data = json.loads(gdf.to_json())
+
+                    # Create a GeoJSON layer
+                    geoparquet_layer = GeoJSON(data=geojson_data)
+                    self.add(geoparquet_layer)
+
+                    # Zoom to the bounds of the GeoParquet layer
+                    self.fit_bounds(geoparquet_layer.bounds)
+                except Exception as e:
+                    print(f"Error adding GeoParquet layer: {e}")
+
+        # Observe changes in the GeoParquet FileChooser
+        geoparquet_chooser.register_callback(add_geoparquet_layer)
+
+        # Dictionary to keep track of active controls
+        active_controls = {"image": False, "cog": False, "geojson": False}
 
         # Create control panels
         image_control_panel = widgets.VBox([image_chooser, image_sliders])
-        video_control_panel = widgets.VBox([video_dropdown, video_opacity_slider])
-        cog_control_panel = widgets.VBox([cog_dropdown, cog_opacity_slider])
-        geojson_control_panel = widgets.VBox([geojson_dropdown])
+        cog_control_panel = widgets.VBox([cog_chooser, cog_opacity_slider])
+        geojson_control_panel = widgets.VBox([geojson_chooser])
         title_control_panel = widgets.VBox([title_input, font_size_slider, font_color_picker, position_dropdown])
+        geoparquet_control_panel = widgets.VBox([geoparquet_chooser])
 
         # Create WidgetControl objects
         image_control = ipyleaflet.WidgetControl(widget=image_control_panel, position="topright")
-        video_control = ipyleaflet.WidgetControl(widget=video_control_panel, position="topright")
         cog_control = ipyleaflet.WidgetControl(widget=cog_control_panel, position="topright")
         geojson_control = ipyleaflet.WidgetControl(widget=geojson_control_panel, position="topright")
-        title_control_panel_control = ipyleaflet.WidgetControl(widget=title_control_panel, position="topright")
+        title_control_panel_control = ipyleaflet.WidgetControl(widget=title_control_panel, position="bottomright")
+        geoparquet_control = ipyleaflet.WidgetControl(widget=geoparquet_control_panel, position="topright")
 
         # Default basemaps
         basemaps = [
@@ -305,30 +344,55 @@ class Map(ipyleaflet.Map):
 
         # Toggle menu
         toggle_menu = widgets.ToggleButtons(
-            options=["None", "Title", "Image", "Video", "COG", "JSON", "Basemap"],  # Added "Basemap" option
+            options=["None", "Title", "Image", "COG", "JSON", "Basemap", "GeoParquet"],  # Added "GeoParquet"
             value=None,
             description="",
             style={"button_width": "80px"},
         )
 
         def toggle_controls(change):
-            for control in [image_control, video_control, cog_control, title_control_panel_control, geojson_control, basemap_control]:
+            # Remove all controls first
+            for control in [image_control, cog_control, title_control_panel_control, geojson_control, basemap_control, geoparquet_control]:
                 if control in self.controls:
                     self.remove_control(control)
-            if change["new"] == "Title":
+
+            # Add the corresponding control based on the button pressed
+            if change["owner"].description == "Title" and change["new"]:
                 self.add_control(title_control_panel_control)
-            elif change["new"] == "Image":
+            elif change["owner"].description == "Image" and change["new"]:
                 self.add_control(image_control)
-            elif change["new"] == "Video":
-                self.add_control(video_control)
-            elif change["new"] == "COG":
+            elif change["owner"].description == "COG" and change["new"]:
                 self.add_control(cog_control)
-            elif change["new"] == "JSON":
+            elif change["owner"].description == "JSON" and change["new"]:
                 self.add_control(geojson_control)
-            elif change["new"] == "Basemap":  # Added logic for "Basemap"
+            elif change["owner"].description == "Basemap" and change["new"]:
                 self.add_control(basemap_control)
+            elif change["owner"].description == "GeoParquet" and change["new"]:  # Handle GeoParquet
+                self.add_control(geoparquet_control)
 
         toggle_menu.observe(toggle_controls, names="value")
+
+        # Create a vertical container for the toggle menu buttons
+        vertical_menu = widgets.VBox(
+            [
+                widgets.ToggleButton(description="Title", value=False, tooltip="Title Control"),
+                widgets.ToggleButton(description="Image", value=False, tooltip="Image Control"),
+                widgets.ToggleButton(description="COG", value=False, tooltip="COG Control"),
+                widgets.ToggleButton(description="JSON", value=False, tooltip="GeoJSON Control"),
+                widgets.ToggleButton(description="Basemap", value=False, tooltip="Basemap Control"),
+                widgets.ToggleButton(description="GeoParquet", value=False, tooltip="GeoParquet Control"),  # Added GeoParquet button
+            ],
+            layout=widgets.Layout(
+                display="flex",
+                flex_flow="column",
+                align_items="stretch",
+                width="150px",  # Adjust width as needed
+            ),
+        )
+
+        # Attach the toggle_controls function to each button in the vertical menu
+        for button in vertical_menu.children:
+            button.observe(toggle_controls, names="value")
 
         # Collapsible menu button
         collapse_button = widgets.Button(
@@ -341,7 +405,7 @@ class Map(ipyleaflet.Map):
 
         def toggle_menu_visibility(b):
             """
-            Toggles the visibility of the toggle menu and removes all controls when collapsed.
+            Toggles the visibility of the vertical menu and removes all controls when collapsed.
 
             Args:
                 b: The button click event.
@@ -349,25 +413,25 @@ class Map(ipyleaflet.Map):
             Returns:
                 None
             """
-            if toggle_menu.layout.display == "none":
-                # Show the toggle menu
-                toggle_menu.layout.display = "flex"
+            if vertical_menu.layout.display == "none":
+                # Show the vertical menu
+                vertical_menu.layout.display = "flex"
                 collapse_button.icon = "eye-slash"
             else:
-                # Hide the toggle menu and remove all controls
-                toggle_menu.layout.display = "none"
+                # Hide the vertical menu and remove all controls
+                vertical_menu.layout.display = "none"
                 collapse_button.icon = "eye"
 
                 # Remove all active controls
-                for control in [image_control, video_control, cog_control, title_control_panel_control, geojson_control, basemap_control]:
+                for control in [image_control, cog_control, title_control_panel_control, geojson_control, basemap_control, geoparquet_control]:
                     if control in self.controls:
                         self.remove_control(control)
 
         collapse_button.on_click(toggle_menu_visibility)
 
-        # Add controls to the map
+        # Add the vertical menu and collapse button to the map
         self.add_control(ipyleaflet.WidgetControl(widget=collapse_button, position="topright"))
-        self.add_control(ipyleaflet.WidgetControl(widget=toggle_menu, position="topright"))
+        self.add_control(ipyleaflet.WidgetControl(widget=vertical_menu, position="topright"))
 
     def save_map(self):
         """
