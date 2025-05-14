@@ -1,10 +1,10 @@
 site_name: salmongis
-site_description: A geospatial package
+site_description: A geospatial package for researchers or developers wanting an easy way to import geographic data
 site_author: GISCreations
 site_url: https://GISCreations.github.io/salmongis
 repo_url: https://github.com/GISCreations/salmongis
 
-copyright: "Copyright &copy; 2024 - 2024 Owen Bales"
+copyright: "Copyright &copy; 2024 - 2025 Owen Bales"
 
 theme:
     palette:
@@ -91,3 +91,4 @@ nav:
           - salmongis module: salmongis.md
           - common module: common.md
           - folium module: foliumap.md
+          - graph module: graph.md
