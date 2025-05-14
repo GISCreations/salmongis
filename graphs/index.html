@@ -1121,22 +1121,25 @@ Map            (<span title="ipyleaflet.leaflet.Map">Map</span>)
             <span class="k">if</span> <span class="ow">not</span> <span class="n">selected_file</span><span class="p">:</span>
                 <span class="c1"># Remove the current GeoJSON layer if no file is selected</span>
                 <span class="k">if</span> <span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">]:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">remove_layer</span><span class="p">(</span><span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">])</span>
                     <span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Remove the existing GeoJSON layer if it exists</span>
                 <span class="k">if</span> <span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">]:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">])</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">remove_layer</span><span class="p">(</span><span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">])</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="c1"># Load the GeoJSON data from the selected file</span>
                     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">selected_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                         <span class="n">geojson_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-                    <span class="n">geojson_layer</span> <span class="o">=</span> <span class="n">GeoJSON</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">geojson_data</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">geojson_layer</span><span class="p">)</span>
+                    <span class="n">geojson_layer</span> <span class="o">=</span> <span class="n">GeoJSON</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">geojson_data</span><span class="p">))</span>  <span class="c1"># Ensure data is parsed as JSON</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">geojson_layer</span><span class="p">)</span>
                     <span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geojson_layer</span>
 
                     <span class="c1"># Zoom to the bounds of the GeoJSON layer</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">fit_bounds</span><span class="p">(</span><span class="n">geojson_layer</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">geojson_layer</span><span class="p">,</span> <span class="s2">&quot;bounds&quot;</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">fit_bounds</span><span class="p">(</span><span class="n">geojson_layer</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GeoJSON layer does not have bounds.&quot;</span><span class="p">)</span>
                 <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading GeoJSON: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -1478,7 +1481,7 @@ Map            (<span title="ipyleaflet.leaflet.Map">Map</span>)
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error saving map: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="n">save_button</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="n">save_map_as_html</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">add_control</span><span class="p">(</span><span class="n">ipyleleaflet</span><span class="o">.</span><span class="n">WidgetControl</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">save_button</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;bottomleft&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_control</span><span class="p">(</span><span class="n">ipyleaflet</span><span class="o">.</span><span class="n">WidgetControl</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">save_button</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;bottomleft&quot;</span><span class="p">))</span>
 
         <span class="c1"># Remove GeoParquet-related widgets and controls</span>
         <span class="c1"># Removed geoparquet_chooser</span>
@@ -1899,22 +1902,25 @@ and values are URLs to the GeoJSON files.</p></td>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">selected_file</span><span class="p">:</span>
             <span class="c1"># Remove the current GeoJSON layer if no file is selected</span>
             <span class="k">if</span> <span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">remove_layer</span><span class="p">(</span><span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">])</span>
                 <span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># Remove the existing GeoJSON layer if it exists</span>
             <span class="k">if</span> <span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">]:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">remove_layer</span><span class="p">(</span><span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">])</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="c1"># Load the GeoJSON data from the selected file</span>
                 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">selected_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
                     <span class="n">geojson_data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
-                <span class="n">geojson_layer</span> <span class="o">=</span> <span class="n">GeoJSON</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">geojson_data</span><span class="p">)</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">geojson_layer</span><span class="p">)</span>
+                <span class="n">geojson_layer</span> <span class="o">=</span> <span class="n">GeoJSON</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">geojson_data</span><span class="p">))</span>  <span class="c1"># Ensure data is parsed as JSON</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_layer</span><span class="p">(</span><span class="n">geojson_layer</span><span class="p">)</span>
                 <span class="n">current_overlay</span><span class="p">[</span><span class="s2">&quot;geojson&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">geojson_layer</span>
 
                 <span class="c1"># Zoom to the bounds of the GeoJSON layer</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">fit_bounds</span><span class="p">(</span><span class="n">geojson_layer</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">geojson_layer</span><span class="p">,</span> <span class="s2">&quot;bounds&quot;</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">fit_bounds</span><span class="p">(</span><span class="n">geojson_layer</span><span class="o">.</span><span class="n">bounds</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;GeoJSON layer does not have bounds.&quot;</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error loading GeoJSON: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
@@ -2279,7 +2285,7 @@ and values are URLs to the GeoJSON files.</p></td>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error saving map: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="n">save_button</span><span class="o">.</span><span class="n">on_click</span><span class="p">(</span><span class="n">save_map_as_html</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">add_control</span><span class="p">(</span><span class="n">ipyleleaflet</span><span class="o">.</span><span class="n">WidgetControl</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">save_button</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;bottomleft&quot;</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_control</span><span class="p">(</span><span class="n">ipyleaflet</span><span class="o">.</span><span class="n">WidgetControl</span><span class="p">(</span><span class="n">widget</span><span class="o">=</span><span class="n">save_button</span><span class="p">,</span> <span class="n">position</span><span class="o">=</span><span class="s2">&quot;bottomleft&quot;</span><span class="p">))</span>
 
     <span class="c1"># Remove GeoParquet-related widgets and controls</span>
     <span class="c1"># Removed geoparquet_chooser</span>
