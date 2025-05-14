@@ -91,4 +91,4 @@ nav:
           - salmongis module: salmongis.md
           - common module: common.md
           - folium module: foliumap.md
-          - graph module: graph.md
+          - graph module: graphs.md

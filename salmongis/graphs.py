@@ -50,7 +50,7 @@ class Map(ipyleaflet.Map):
         Returns:
             None
         """
-        # Default options
+        # Default options for images, videos, COGs, and GeoJSON
         options = options or {
             "Sample Image 1": ("https://example.com/sample1.png", [[-90, -180], [90, 180]]),
             "Sample Image 2": ("https://example.com/sample2.png", [[10, -50], [20, 50]]),
@@ -71,12 +71,13 @@ class Map(ipyleaflet.Map):
             "World Cities": "https://github.com/opengeos/datasets/releases/download/world/world_cities.geojson",
         }
 
-        # Widgets for image selection using ipyfilechooser
+        # Widgets for image selection
         image_chooser = filechooser.FileChooser()
         image_chooser.title = "Select an image file"
         image_chooser.filter_pattern = ["*.png", "*.jpg", "*.jpeg"]  # Restrict file types
         image_chooser.use_dir_icons = True
 
+        # Sliders for image bounds and opacity
         lat_min_slider = widgets.FloatSlider(value=0, min=-90, max=90, step=0.1, description="Lat Min:")
         lon_min_slider = widgets.FloatSlider(value=0, min=-180, max=180, step=0.1, description="Lon Min:")
         lat_max_slider = widgets.FloatSlider(value=0, min=-90, max=90, step=0.1, description="Lat Max:")
@@ -92,7 +93,7 @@ class Map(ipyleaflet.Map):
         )
         video_opacity_slider = widgets.FloatSlider(value=0.7, min=0, max=1, step=0.1, description="Opacity:")
 
-        # Widgets for COG selection using ipyfilechooser
+        # Widgets for COG selection
         cog_chooser = filechooser.FileChooser()
         cog_chooser.title = "Select a COG file"
         cog_chooser.filter_pattern = ["*.tif", "*.tiff"]  # Restrict file types to TIFF
@@ -143,8 +144,7 @@ class Map(ipyleaflet.Map):
         cog_control_panel = widgets.VBox([cog_chooser, cog_opacity_slider])
         cog_control = ipyleaflet.WidgetControl(widget=cog_control_panel, position="topright")
 
-
-        # Widgets for GeoJSON selection using ipyfilechooser
+        # Widgets for GeoJSON selection
         geojson_chooser = filechooser.FileChooser()
         geojson_chooser.title = "Select a GeoJSON file"
         geojson_chooser.filter_pattern = ["*.geojson", "*.json"]  # Restrict file types to GeoJSON/JSON
@@ -188,10 +188,10 @@ class Map(ipyleaflet.Map):
         geojson_chooser.register_callback(update_geojson)
 
         # Create the GeoJSON control panel
-        geojson_control_panel = widgets.VBox([geojson_chooser])  # Use geojson_chooser here
+        geojson_control_panel = widgets.VBox([geojson_chooser])
         geojson_control = ipyleaflet.WidgetControl(widget=geojson_control_panel, position="topright")
 
-        # Add the GeoJSON control to the map
+
 
         # Widgets for title
         title_input = widgets.Text(value=title, description="Title:")
@@ -286,6 +286,15 @@ class Map(ipyleaflet.Map):
         image_chooser.register_callback(update_image)
 
         def update_image_bounds(change):
+            """
+            Updates the bounds of the image overlay dynamically.
+
+            Args:
+                change: The change event triggered by the sliders.
+
+            Returns:
+                None
+            """
             if current_overlay["image"]:
                 new_bounds = [
                     [lat_min_slider.value, lon_min_slider.value],
@@ -293,94 +302,17 @@ class Map(ipyleaflet.Map):
                 ]
                 current_overlay["image"].bounds = new_bounds
 
-        # Function to add or update the COG layer
-        def add_cog_layer(change):
-            """
-            Adds or updates the COG layer on the map based on the selected file and opacity.
-
-            Args:
-                change: The change event triggered by the FileChooser or opacity slider.
-
-            Returns:
-                None
-            """
-            selected_file = cog_chooser.selected
-            if not selected_file:
-                # Remove the current COG layer if no file is selected
-                if current_overlay["cog"]:
-                    self.remove(current_overlay["cog"])
-                    current_overlay["cog"] = None
-            else:
-                # Remove the existing COG layer if it exists
-                if current_overlay["cog"]:
-                    self.remove(current_overlay["cog"])
-                try:
-                    # Add the new COG layer
-                    client = TileClient(selected_file)
-                    cog_layer = get_leaflet_tile_layer(client, opacity=cog_opacity_slider.value)
-                    self.add(cog_layer)
-                    current_overlay["cog"] = cog_layer
-
-                    # Zoom to the bounds of the COG layer
-                    self.fit_bounds(client.bounds)
-                except Exception as e:
-                    print(f"Error adding COG layer: {e}")
-
-        # Observe changes in the FileChooser
-        cog_chooser.register_callback(add_cog_layer)
-
-        # Observe changes in the opacity slider
-        cog_opacity_slider.observe(add_cog_layer, names="value")
-
-        def update_geojson(change):
-            """
-            Updates the GeoJSON layer on the map based on the selected file.
-
-            Args:
-                change: The change event triggered by the FileChooser.
-
-            Returns:
-                None
-            """
-            # Remove the current GeoJSON layer if it exists
-            if current_overlay["geojson"]:
-                self.remove(current_overlay["geojson"])
-                current_overlay["geojson"] = None
-
-            # Add the new GeoJSON layer
-            geojson_url = geojson_chooser.selected
-            if geojson_url:
-                try:
-                    with open(geojson_file, "r") as f:
-                        geojson_data = f.read()
-                    geojson_layer = GeoJSON(data=json.loads(geojson_data))
-                    self.add(geojson_layer)
-                    current_overlay["geojson"] = geojson_layer
-
-                    # Zoom to the bounds of the GeoJSON layer
-                    self.fit_bounds(geojson_layer.bounds)
-                except Exception as e:
-                    print(f"Error loading GeoJSON: {e}")
-
         # Observe changes in widgets
-        image_chooser.observe(update_image, names="value")
         lat_min_slider.observe(update_image_bounds, names="value")
         lon_min_slider.observe(update_image_bounds, names="value")
         lat_max_slider.observe(update_image_bounds, names="value")
         lon_max_slider.observe(update_image_bounds, names="value")
-        cog_chooser.observe(add_cog_layer, names="value")
-        cog_opacity_slider.observe(add_cog_layer, names="value")
-        geojson_chooser.observe(update_geojson, names="value")  # Use geojson_chooser here
-        title_input.observe(update_title, names="value")
-        font_size_slider.observe(update_title, names="value")
-        font_color_picker.observe(update_title, names="value")
-        position_dropdown.observe(update_title, names="value")
 
         # Create control panels
         image_control_panel = widgets.VBox([image_chooser, image_sliders])
         video_control_panel = widgets.VBox([video_dropdown, video_opacity_slider])
         cog_control_panel = widgets.VBox([cog_chooser, cog_opacity_slider])
-        geojson_control_panel = widgets.VBox([geojson_chooser])  # Use geojson_chooser here
+        geojson_control_panel = widgets.VBox([geojson_chooser])
         title_control_panel = widgets.VBox([title_input, font_size_slider, font_color_picker, position_dropdown])
 
         # Create WidgetControl objects
@@ -453,6 +385,15 @@ class Map(ipyleaflet.Map):
 
         # Function to toggle the visibility of the basemap menu
         def toggle_basemap_menu(b):
+            """
+            Toggles the visibility of the basemap menu.
+
+            Args:
+                b: The button click event.
+
+            Returns:
+                None
+            """
             if basemap_menu.layout.display == "none":
                 basemap_menu.layout.display = "flex"
                 basemap_button.icon = "eye-slash"
@@ -581,7 +522,7 @@ class Map(ipyleaflet.Map):
                 print(f"Error saving map: {e}")
 
         save_button.on_click(save_map_as_html)
-        self.add_control(ipyleaflet.WidgetControl(widget=save_button, position="bottomleft"))
+        self.add_control(ipyleleaflet.WidgetControl(widget=save_button, position="bottomleft"))
 
         # Remove GeoParquet-related widgets and controls
         # Removed geoparquet_chooser
