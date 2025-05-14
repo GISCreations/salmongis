@@ -1,7 +1,8 @@
 # Welcome to salmongis
 
 
-[![image](https://pngtree.com/so/%C2%A0salmon)](https://pypi.python.org/pypi/salmongis)
+[![image](https://img.shields.io/pypi/v/salmongis.svg)](https://pypi.python.org/pypi/salmongis)
+
 
 
 **A geospatial package for researchers and gis developers to easily visualize data**
