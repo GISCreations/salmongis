@@ -10,6 +10,7 @@ from localtileserver import TileClient, get_leaflet_tile_layer
 import ipyfilechooser as filechooser
 import time
 import requests
+import json
 
 
 class Map(ipyleaflet.Map):
@@ -165,22 +166,25 @@ class Map(ipyleaflet.Map):
             if not selected_file:
                 # Remove the current GeoJSON layer if no file is selected
                 if current_overlay["geojson"]:
-                    self.remove(current_overlay["geojson"])
+                    self.remove_layer(current_overlay["geojson"])
                     current_overlay["geojson"] = None
             else:
                 # Remove the existing GeoJSON layer if it exists
                 if current_overlay["geojson"]:
-                    self.remove(current_overlay["geojson"])
+                    self.remove_layer(current_overlay["geojson"])
                 try:
                     # Load the GeoJSON data from the selected file
                     with open(selected_file, "r") as f:
                         geojson_data = f.read()
-                    geojson_layer = GeoJSON(data=geojson_data)
-                    self.add(geojson_layer)
+                    geojson_layer = GeoJSON(data=json.loads(geojson_data))  # Ensure data is parsed as JSON
+                    self.add_layer(geojson_layer)
                     current_overlay["geojson"] = geojson_layer
 
                     # Zoom to the bounds of the GeoJSON layer
-                    self.fit_bounds(geojson_layer.bounds)
+                    if hasattr(geojson_layer, "bounds"):
+                        self.fit_bounds(geojson_layer.bounds)
+                    else:
+                        print("GeoJSON layer does not have bounds.")
                 except Exception as e:
                     print(f"Error loading GeoJSON: {e}")
 
@@ -522,7 +526,7 @@ class Map(ipyleaflet.Map):
                 print(f"Error saving map: {e}")
 
         save_button.on_click(save_map_as_html)
-        self.add_control(ipyleleaflet.WidgetControl(widget=save_button, position="bottomleft"))
+        self.add_control(ipyleaflet.WidgetControl(widget=save_button, position="bottomleft"))
 
         # Remove GeoParquet-related widgets and controls
         # Removed geoparquet_chooser
