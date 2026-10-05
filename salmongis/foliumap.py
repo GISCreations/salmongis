@@ -13,7 +13,9 @@ class Map(folium.Map):
     A custom map class extending folium.Map.
     """
 
-    def __init__(self, center: Tuple[float, float] = (0, 0), zoom: int = 2, **kwargs) -> None:
+    def __init__(
+        self, center: Tuple[float, float] = (0, 0), zoom: int = 2, **kwargs
+    ) -> None:
         """
         Initializes the map with a given center and zoom level.
 
@@ -24,7 +26,7 @@ class Map(folium.Map):
         """
         super().__init__(location=center, zoom_start=zoom, **kwargs)
         folium.LayerControl().add_to(self)
-        
+
     def add_geojson(
         self,
         data: Union[str, Dict],
@@ -141,14 +143,16 @@ class Map(folium.Map):
 
         Raises:
             ValueError: If the provided basemap names are not supported.
-        """ 
+        """
         attr = (
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> '
-        'contributors, &copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
-)
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> '
+            'contributors, &copy; <a href="https://cartodb.com/attributions">CartoDB</a>'
+        )
 
         layer_right = folium.TileLayer(left_basemap, attr=attr)
         layer_left = folium.TileLayer(right_basemap, attr=attr)
 
-        sbs = folium.plugins.SideBySideLayers(layer_left=layer_left, layer_right=layer_right)
+        sbs = folium.plugins.SideBySideLayers(
+            layer_left=layer_left, layer_right=layer_right
+        )
         self.add_child(sbs)
