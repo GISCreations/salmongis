@@ -17,7 +17,7 @@
 -   Dynamic file manipulation within ipyleaflet maps
 -   Ability to add images, COGS, and GEOJSON files directly into maps
 -   Change map title without hard coding!
--   
+-
 
 ## Requirements:
 - folium
